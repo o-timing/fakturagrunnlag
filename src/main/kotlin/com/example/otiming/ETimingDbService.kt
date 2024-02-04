@@ -30,4 +30,46 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
         return results.toImmutableList()
     }
 
+    fun hentAlleDeltakere(): List<Deltaker> =
+        jdbcTemplate.query(
+            """
+                select name, ename, kid, ecard, otiming_leiebrikker.eier as leiebrikkeeier
+                from name
+                    left outer join otiming_leiebrikker on (name.ecard::text = otiming_leiebrikker.brikkenummer)
+                where name != 'Ledig'
+                  and ename != 'Startnr'
+  		    """.trimIndent()
+        ) { response, _ ->
+            Deltaker(
+                fornavn = response.getString("name").trim(),
+                etternavn = response.getString("ename").trim(),
+                eventorId =
+                response.getString("kid")?.trim()?.let { EventorParticipantId(it) },
+                brikkenummer = Brikkenummer(response.getString("ecard").trim()),
+                leiebrikkeEier = response.getString("leiebrikkeeier")
+            )
+        }.toImmutableList()
+
+    fun getLeiebrikkeMap(): Map<String, Leiebrikke> {
+        val leiebrikker = jdbcTemplate.query(
+            """
+            select brikkenummer, eier, kortnavn, kommentar
+            from otiming_leiebrikker
+            """.trimIndent()
+        ) { res, _ ->
+            val brikkenummer = res.getString("brikkenummer")
+            Pair(
+                brikkenummer,
+                Leiebrikke(
+                    brikkenummer = Brikkenummer(brikkenummer),
+                    eier = res.getString("eier"),
+                    kortnavn = res.getString("kortnavn"),
+                    kommentar = res.getString("kommentar")
+                )
+            )
+        }
+
+        return leiebrikker.toMap()
+    }
+
 }

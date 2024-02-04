@@ -8,17 +8,17 @@ import java.nio.file.Paths
 
 class EventorFileService : AbstractEventorService() {
 
-    override fun getEntries(eventId: Int): EntryList? {
-        return xmlStringAs<EntryList>(slurpFile("entries.xml"))
-    }
+    override fun getEntries(eventId: Int) =
+        retrieveData<EntryList>("entries.xml")
 
-    override fun getEntryFees(eventId: Int): EntryFeeList? {
-        return xmlStringAs<EntryFeeList>(slurpFile("entryfees.xml"))
-    }
+    override fun getEntryFees(eventId: Int) =
+        retrieveData<EntryFeeList>("entryfees.xml")
 
-    override fun getEventClasses(eventId: Int): EventClassList? {
-        return xmlStringAs<EventClassList>(slurpFile("eventclasses.xml"))
-    }
+    override fun getEventClasses(eventId: Int) =
+        retrieveData<EventClassList>("eventclasses.xml")
+
+    private inline fun <reified T> retrieveData(fileName: String) =
+        xmlStringAs<T>(slurpFile(fileName))
 
     private fun slurpFile(filename: String): String {
         val path = Paths.get(javaClass.classLoader.getResource(filename).toURI())
