@@ -3,21 +3,19 @@ package com.example.otiming
 import generated.EntryFeeList
 import generated.EntryList
 import generated.EventClassList
-import jakarta.xml.bind.JAXBContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.boot.context.properties.ConfigurationProperties
-import java.io.StringReader
 
 @ConfigurationProperties(prefix = "o-timing.eventor")
 data class EventorConfig(
     val apiKey: String
 )
 
-class EventorService(val config: EventorConfig) {
+class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()
 
-    fun fetchEntries(eventId: Int): EntryList? {
+    override fun getEntries(eventId: Int): EntryList? {
         val request = Request.Builder()
             .url("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true")
             .addHeader("ApiKey", config.apiKey)
@@ -27,17 +25,11 @@ class EventorService(val config: EventorConfig) {
             response.body?.string()
         }
 
-        val context = JAXBContext.newInstance(EntryList::class.java)
-        val xml = xmlString?.let {
-            val stringReader = StringReader(it)
-            val unmarshaller = context.createUnmarshaller()
-
-            unmarshaller.unmarshal(stringReader) as EntryList
-        }
-        return xml
+        return xmlString?.let { xmlStringAs<EntryList>(it) }
     }
 
-    fun getEntryFeeList(eventId: Int): EntryFeeList? {
+
+    override fun getEntryFees(eventId: Int): EntryFeeList? {
         val request = Request.Builder()
             .url("https://eventor.orientering.no/api/entryfees/events/$eventId")
             .addHeader("ApiKey", config.apiKey)
@@ -47,19 +39,10 @@ class EventorService(val config: EventorConfig) {
             response.body?.string()
         }
 
-        val entryFeeList = xmlString?.let { asEntryFeeList(it) }
-
-        return entryFeeList
+        return xmlString?.let { xmlStringAs<EntryFeeList>(it) }
     }
 
-    fun asEntryFeeList(xmlString: String): EntryFeeList {
-        val context = JAXBContext.newInstance(EntryFeeList::class.java)
-        val stringReader = StringReader(xmlString)
-        val unmarshaller = context.createUnmarshaller()
-        return unmarshaller.unmarshal(stringReader) as EntryFeeList
-    }
-
-    fun getEventClasses(eventId: Int): EventClassList? {
+    override fun getEventClasses(eventId: Int): EventClassList? {
         val request = Request.Builder()
             .url("https://eventor.orientering.no/api/eventclasses?eventId=$eventId&includeEntryFees=true")
             .addHeader("ApiKey", config.apiKey)
@@ -69,14 +52,7 @@ class EventorService(val config: EventorConfig) {
             response.body?.string()
         }
 
-        val context = JAXBContext.newInstance(EventClassList::class.java)
-        val xml: EventClassList? = xmlString?.let {
-            val stringReader = StringReader(it)
-            val unmarshaller = context.createUnmarshaller()
-
-            unmarshaller.unmarshal(stringReader) as EventClassList
-        }
-        return xml
+        return xmlString?.let { xmlStringAs<EventClassList>(it) }
     }
 
 }
