@@ -33,10 +33,11 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
     fun hentAlleDeltakere(): List<Deltaker> =
         jdbcTemplate.query(
             """
-                select name, ename, kid, ecard, otiming_leiebrikker.eier as leiebrikkeeier
+                select name.name, ename, name.kid, ecard, otiming_leiebrikker.eier as leiebrikkeeier, team.code as klubb_id, team.name as klubb_navn
                 from name
-                    left outer join otiming_leiebrikker on (name.ecard::text = otiming_leiebrikker.brikkenummer)
-                where name != 'Ledig'
+                         left outer join otiming_leiebrikker on (name.ecard::text = otiming_leiebrikker.brikkenummer)
+                         left outer join team on (name.team = team.code)
+                where name.name != 'Ledig'
                   and ename != 'Startnr'
   		    """.trimIndent()
         ) { response, _ ->
@@ -46,7 +47,13 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
                 eventorId =
                 response.getString("kid")?.trim()?.let { EventorParticipantId(it) },
                 brikkenummer = Brikkenummer(response.getString("ecard").trim()),
-                leiebrikkeEier = response.getString("leiebrikkeeier")
+                leiebrikkeEier = response.getString("leiebrikkeeier"),
+                klubb = response.getString("klubb_id")?.let {
+                    Klubb(
+                        id = KlubbId(it),
+                        navn = response.getString("klubb_navn")
+                    )
+                }
             )
         }.toImmutableList()
 

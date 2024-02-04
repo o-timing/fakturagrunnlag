@@ -27,6 +27,7 @@ class OTimingApplicationTests(@Autowired val jdbcTemplate: JdbcTemplate) {
     fun testHentDeltakere(): Unit {
         val eTimingDbService = ETimingDbService(jdbcTemplate)
         val deltakere = eTimingDbService.hentAlleDeltakere()
+        println(deltakere.joinToString("\n"))
         println(deltakere.size)
     }
 

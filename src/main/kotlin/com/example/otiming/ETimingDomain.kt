@@ -8,8 +8,17 @@ data class Deltaker(
     val etternavn: String,
     val eventorId: EventorParticipantId?,
     val brikkenummer: Brikkenummer?,
-    val leiebrikkeEier: String?
+    val leiebrikkeEier: String?,
+    val klubb: Klubb?
 )
+
+data class Klubb(
+    val id: KlubbId,
+    val navn: String
+)
+
+@JvmInline
+value class KlubbId(val value: String)
 
 data class Leiebrikke(
     val brikkenummer: Brikkenummer,
