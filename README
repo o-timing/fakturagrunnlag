@@ -1,0 +1,23 @@
+TODO:
+sjekke hvordan de gamle tabellene for otiming ble lagd
+undersøke hva de gamle scriptene gjorde og skriv ned en liste her
+
+flytte backup-tingene inn under denne katalogen
+Dokumentere hvordan man laster inn backup
+
+X sjekke om det er noen løpere som ikke er tilknyttet noen klubb (alt ok)
+X skifte ut postgres med msqql
+    X hente inn en annen driver
+    X finne ut hvilken test som kan kjøres for å sjekke om dette er riktig
+
+
+
+sjekk av database
+- hvis otiming-tabellene ikke finnes så må disse opprettes
+    - otiming_leiebrikker
+- slette alle Ledig Startnr
+- sjekke at alle løpere er knyttet til en klubb
+- sjekke at alle løperene er knyttet til et arrangement
+    - hvis det kun finnes ett arrangement kan alle løpere knyttes til dette arrangementet
+- sjekke at alle løperene har en brikke
+    - det er greit å mangle brikke hvis status er Påmeldt (I)

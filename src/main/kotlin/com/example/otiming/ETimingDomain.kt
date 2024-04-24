@@ -8,7 +8,7 @@ data class Deltaker(
     val etternavn: String,
     val eventorId: EventorParticipantId?,
     val brikkenummer: Brikkenummer?,
-    val leiebrikkeEier: String?,
+    val leiebrikke: Leiebrikke?,
     val klubb: Klubb?
 )
 

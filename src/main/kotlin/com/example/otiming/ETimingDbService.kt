@@ -3,7 +3,6 @@ package com.example.otiming
 import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.internal.toImmutableList
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
 
 private val logger = KotlinLogging.logger {}
@@ -12,18 +11,15 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
 
     fun findEventIds(): List<Int> {
         logger.info { "getting eventId from database" }
-        val rowMapper: RowMapper<Int> = RowMapper<Int> { resultSet: ResultSet, _: Int ->
-            resultSet.getInt("id")
-        }
-
 
         val results = jdbcTemplate.query(
             """
                 select id
                 from day
-            """.trimMargin(),
-            rowMapper
-        )
+            """.trimIndent()
+        ) { resultSet: ResultSet, _: Int ->
+            resultSet.getInt("id")
+        }
 
         logger.info { "Got eventIds from database: ${results.joinToString(", ")}" }
 
@@ -33,9 +29,14 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
     fun hentAlleDeltakere(): List<Deltaker> =
         jdbcTemplate.query(
             """
-                select name.name, ename, name.kid, ecard, otiming_leiebrikker.eier as leiebrikkeeier, team.code as klubb_id, team.name as klubb_navn
+                select name.name, ename, name.kid, ecard,
+                    otiming_leiebrikker.brikkenummer as leiebrikkenummer,
+                    otiming_leiebrikker.eier as leiebrikkeeier,
+                    otiming_leiebrikker.kortnavn as leiebrikkekortnavn,
+                    otiming_leiebrikker.kommentar as leiebrikkekommentar,
+                    team.code as klubb_id, team.name as klubb_navn
                 from name
-                         left outer join otiming_leiebrikker on (name.ecard::text = otiming_leiebrikker.brikkenummer)
+                         left outer join otiming_leiebrikker on (CONVERT(VARCHAR(10), name.ecard) = otiming_leiebrikker.brikkenummer)
                          left outer join team on (name.team = team.code)
                 where name.name != 'Ledig'
                   and ename != 'Startnr'
@@ -44,10 +45,16 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
             Deltaker(
                 fornavn = response.getString("name").trim(),
                 etternavn = response.getString("ename").trim(),
-                eventorId =
-                response.getString("kid")?.trim()?.let { EventorParticipantId(it) },
-                brikkenummer = Brikkenummer(response.getString("ecard").trim()),
-                leiebrikkeEier = response.getString("leiebrikkeeier"),
+                eventorId = response.getString("kid")?.trim()?.let { EventorParticipantId(it) },
+                brikkenummer = response.getString("ecard")?.trim()?.let { Brikkenummer(it) },
+                leiebrikke = response.getString("leiebrikkenummer")?.let { leiebrikkenummer ->
+                    Leiebrikke(
+                        brikkenummer = Brikkenummer(leiebrikkenummer),
+                        eier = response.getString("leiebrikkeeier"),
+                        kortnavn = response.getString("leiebrikkekortnavn"),
+                        kommentar = response.getString("leiebrikkekommentar")
+                    )
+                },
                 klubb = response.getString("klubb_id")?.let {
                     Klubb(
                         id = KlubbId(it),
