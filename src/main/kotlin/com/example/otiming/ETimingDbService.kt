@@ -86,4 +86,41 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
         return leiebrikker.toMap()
     }
 
+    /**
+     * Sjekker om otiming_leiebrikker-tabellen finnes i databasen
+     *
+     * @return true hvis den finnes, false hvis den ikke finnes
+     */
+    fun finnesLeiebrikketabellen(): Boolean {
+        val count: Int = jdbcTemplate.queryForObject(
+            """
+                SELECT count(*)
+                FROM sys.tables
+                WHERE name = 'otiming_leiebrikker' 
+                  AND schema_name(schema_id) = 'dbo'
+        """.trimIndent(),
+            Integer::class.java
+        )!!.toInt()
+        return count == 1
+    }
+
+    /**
+     * Oppretter otiming_leiebrikker-tabellen hvis den ikke allerede finnes
+     */
+    fun createLeiebrikkeTable() {
+        if (!finnesLeiebrikketabellen()) {
+            jdbcTemplate.execute(
+                """
+            create table otiming_leiebrikker
+            (
+                brikkenummer int not null constraint otiming_leiebrikker_pk primary key,
+                eier         varchar(50) not null,
+                kortnavn     varchar(10),
+                kommentar    varchar
+            );
+        """.trimIndent()
+            )
+        }
+    }
+
 }
