@@ -19,6 +19,24 @@ class PopulateEventorTablesTests(
     val eventId = 19449
 
     @Test
+    fun populateOtimingEventorRawWithEventclasses() {
+        val eventorService = EventorServiceImpl(config)
+
+        val xmlString: String? = eventorService.getEventClassesRaw(eventId)
+
+        xmlString?.let {
+            OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
+                jdbcTemplate,
+                eventId,
+                it,
+                // TODO gjør dette om til en enum
+                "eventclasses",
+                LocalDateTime.now()
+            )
+        }
+    }
+
+    @Test
     fun populateOtimingEventorRawWithEntryfees() {
         val eventorService = EventorServiceImpl(config)
 
