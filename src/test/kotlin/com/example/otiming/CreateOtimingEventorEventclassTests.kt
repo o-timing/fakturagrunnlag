@@ -20,7 +20,7 @@ class CreateOtimingEventorEventclassTests(
         assert(CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_eventclass"))
 
         if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_eventclass_entryfee")) {
-            createOtimingEventorEventclassesEntryfeeTable()
+            createOtimingEventorEventclassEntryfeeTable()
         }
         assert(CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_eventclass_entryfee"))
     }
@@ -39,16 +39,17 @@ class CreateOtimingEventorEventclassTests(
         )
     }
 
-    fun createOtimingEventorEventclassesEntryfeeTable() {
+    fun createOtimingEventorEventclassEntryfeeTable() {
         jdbcTemplate.execute(
             """
                 CREATE TABLE otiming_eventor_eventclass_entryfee
                 (
                     eventClassId INT NOT NULL,
                     entryFeeId INT NOT NULL,
+                    sequence INT NOT NULL,
                     
                     constraint otiming_eventor_eventclass_entryfee_pk 
-                        primary key (eventClassId, entryFeeId) 
+                        primary key (eventClassId, entryFeeId, sequence) 
                 );
     """.trimIndent()
         )

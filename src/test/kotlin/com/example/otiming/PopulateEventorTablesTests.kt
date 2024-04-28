@@ -2,6 +2,8 @@ package com.example.otiming
 
 import generated.EntryFee
 import generated.EntryFeeList
+import generated.EventClass
+import generated.EventClassList
 import jakarta.xml.bind.JAXBContext
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,6 +54,57 @@ class PopulateEventorTablesTests(
                 LocalDateTime.now()
             )
         }
+    }
+
+    @Test
+    fun populateOtimingEventorEventclasses() {
+        // les entryfees fra raw tabellen
+        val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "eventclasses")
+
+        rawRow?.let { row ->
+            // parse som xml
+            val eventClassList = xmlStringAs<EventClassList>(row.xmlString)
+
+            // iterer over og skriv hver enkelt rad til otiming_eventor_entryfees
+            eventClassList.eventClass.forEach { e: EventClass ->
+                skrivTilOtimingEventorEventclass(
+                    eventId,
+                    e.eventClassId.content.toInt(),
+                    e.name.content,
+                    e.classShortName.content
+                )
+                e.classEntryFee.forEach { cef ->
+                    skrivTilOtimingEventorEventclassEntryfee(
+                        e.eventClassId.content.toInt(),
+                        cef.entryFeeId.content.toInt(),
+                        cef.sequence.content.toInt()
+                    )
+                }
+            }
+        }
+    }
+
+    fun skrivTilOtimingEventorEventclass(eventId: Int, eventClassId: Int, name: String, shortName: String) {
+        jdbcTemplate.update(
+            """
+                insert into otiming_eventor_eventclass (eventClassId, eventId, name, shortName)
+                values (?, ?, ?, ?)
+            """.trimIndent(),
+            eventClassId,
+            eventId,
+            name,
+            shortName
+        )
+    }
+
+    fun skrivTilOtimingEventorEventclassEntryfee(eventClassId: Int, entryFeeId: Int, sequence: Int) {
+        jdbcTemplate.update(
+            """
+                insert into otiming_eventor_eventclass_entryfee (eventClassId, entryFeeId, sequence)
+                values (?, ?, ?)
+            """.trimIndent(),
+            eventClassId, entryFeeId, sequence
+        )
     }
 
 
