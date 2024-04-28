@@ -6,14 +6,14 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 
 @SpringBootTest
-class CreateOtimingEventorEventFeesTests(
+class CreateOtimingEventorEntryfeesTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
 ) {
 
     @Test
     fun createOtiminEventorRawTest() {
         // sjekk om tabellen finnes
-        if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_eventfees")) {
+        if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfees")) {
             // hvis den ikke finnes opprett tabellen
             createOtimingEventorEntryfeesTable()
         }
