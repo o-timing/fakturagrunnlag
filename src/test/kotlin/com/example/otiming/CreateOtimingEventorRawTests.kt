@@ -13,42 +13,25 @@ class CreateOtimingEventorRawTests(
     @Test
     fun createOtiminEventorRawTest() {
         // sjekk om tabellen finnes
-        if (!finnesOtimingEventorRawtabellen()) {
+        if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_raw")) {
             // hvis den ikke finnes opprett tabellen
             createOtimingEventorRawTable()
         }
-        assert(finnesOtimingEventorRawtabellen())
-    }
-
-    /**
-     * Sjekker om otiming_eventor_raw-tabellen finnes i databasen
-     *
-     * @return true hvis den finnes, false hvis den ikke finnes
-     */
-    fun finnesOtimingEventorRawtabellen(): Boolean {
-        val count: Int = jdbcTemplate.queryForObject(
-            """
-                SELECT count(*)
-                FROM sys.tables
-                WHERE name = 'otiming_eventor_raw' 
-                  AND schema_name(schema_id) = 'dbo'
-        """.trimIndent(),
-            Integer::class.java
-        )!!.toInt()
-        return count == 1
+        assert(CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_raw"))
     }
 
     fun createOtimingEventorRawTable() {
         jdbcTemplate.execute(
             """
-                CREATE TABLE otiming_eventor_raw
+                create table otiming_eventor_raw
                 (
-                    eventId  INT           NOT NULL
-                        CONSTRAINT otiming_eventor_raw_pk PRIMARY KEY,
-                    endpoint VARCHAR(100)  NOT NULL,
-                    xml      NVARCHAR(MAX) NOT NULL,
-                    hentet   DATETIME2     NOT NULL
-                );
+                    eventId  int           not null,
+                    endpoint varchar(100)  not null,
+                    endret   datetime2     not null,
+                    xml      nvarchar(max) not null,
+                    constraint otiming_eventor_raw_pk
+                        primary key (eventId, endpoint, endret)
+                )
             """.trimIndent()
         )
     }
