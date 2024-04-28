@@ -13,26 +13,22 @@ class CreateOtimingEventorEntryfeesTests(
     @Test
     fun createOtiminEventorRawTest() {
         // sjekk om tabellen finnes
-        if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfees")) {
+        if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfee")) {
             // hvis den ikke finnes opprett tabellen
             createOtimingEventorEntryfeesTable()
         }
-        assert(CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfees"))
+        assert(CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfee"))
     }
 
     fun createOtimingEventorEntryfeesTable() {
         jdbcTemplate.execute(
             """
-                CREATE TABLE otiming_eventor_entryfees
+                CREATE TABLE otiming_eventor_entryfee
                 (
-                    entryFeeId INT,
-                    endret     DATETIME2 NOT NULL,
+                    entryFeeId INT PRIMARY KEY,
                     eventId    INT,
                     name       NVARCHAR(100),
-                    amount     INT,
-                    
-                    constraint otiming_eventor_entryfees_pk 
-                        primary key (entryFeeId, endret) 
+                    amount     INT
                 );
     """.trimIndent()
         )

@@ -29,6 +29,7 @@ class PopulateEventorTablesTests(
                 jdbcTemplate,
                 eventId,
                 it,
+                // TODO gjør dette om til en enum
                 "entryfees",
                 LocalDateTime.now()
             )
@@ -47,10 +48,9 @@ class PopulateEventorTablesTests(
 
             // iterer over og skriv hver enkelt rad til otiming_eventor_entryfees
             entryfeelist.entryFee.forEach { e: EntryFee ->
-                skrivTilOtimingEventorEntryfees(
+                skrivTilOtimingEventorEntryfee(
                     eventId,
-                    e,
-                    row.endret
+                    e
                 )
             }
         }
@@ -64,6 +64,7 @@ class PopulateEventorTablesTests(
     }
 
 
+    // TODO fiks denne til å returnere en liste
     fun lesFraOtimingEventorRaw(eventId: Int, endpoint: String): OtimingEventorRawRow? {
         return jdbcTemplate.queryForObject<OtimingEventorRawRow>(
             """select eventId, endpoint, endret, xml
@@ -82,13 +83,13 @@ class PopulateEventorTablesTests(
         }
     }
 
-    fun skrivTilOtimingEventorEntryfees(eventId: Int, entryfee: EntryFee, endret: LocalDateTime) {
+    fun skrivTilOtimingEventorEntryfee(eventId: Int, entryfee: EntryFee) {
         jdbcTemplate.update(
             """
-                insert into otiming_eventor_entryfees (entryFeeId, endret, eventId, name, amount)
-                values (?, ?, ?, ?, ?)
+                insert into otiming_eventor_entryfee (entryFeeId, eventId, name, amount)
+                values (?, ?, ?, ?)
             """.trimIndent(),
-            entryfee.entryFeeId.content.toInt(), endret, eventId, entryfee.name.content, entryfee.amount.content.toInt()
+            entryfee.entryFeeId.content.toInt(), eventId, entryfee.name.content, entryfee.amount.content.toInt()
         )
     }
 
