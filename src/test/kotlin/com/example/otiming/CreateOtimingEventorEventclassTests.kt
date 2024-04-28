@@ -4,10 +4,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
-import kotlin.reflect.jvm.internal.impl.util.Check
 
 @SpringBootTest
-class CreateOtimingEventorEventclassesTests(
+class CreateOtimingEventorEventclassTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
 ) {
 
