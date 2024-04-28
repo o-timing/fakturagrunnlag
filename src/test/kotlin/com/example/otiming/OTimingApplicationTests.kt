@@ -1,13 +1,16 @@
 package com.example.otiming
 
-import okhttp3.internal.toImmutableList
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
+import java.time.LocalDateTime
 
 @SpringBootTest
-class OTimingApplicationTests(@Autowired val jdbcTemplate: JdbcTemplate) {
+class OTimingApplicationTests(
+    @Autowired val jdbcTemplate: JdbcTemplate,
+    @Autowired val config: EventorConfig
+) {
 
     // TODO
     // - lag en tabell der man kan legge inn alle nydalens leiebrikker
@@ -20,7 +23,6 @@ class OTimingApplicationTests(@Autowired val jdbcTemplate: JdbcTemplate) {
         println(eventorService.getEntries(18000))
         println(eventorService.getEntryFees(18000))
         println(eventorService.getEventClasses(18000))
-
     }
 
     @Test

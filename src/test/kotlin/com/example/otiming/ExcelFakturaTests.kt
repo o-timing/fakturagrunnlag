@@ -18,15 +18,15 @@ import java.time.format.DateTimeFormatter
 class ExcelFakturaTests() {
 
     data class FakturaRad(
-        val klubb: String,
-        val distanse: String,
-        val dato: LocalDate,
-        val startnr: Int,
-        val fornavn: String,
-        val etternavn: String,
-        val klasse: String,
-        val klassekontigent: Int,
-        val brikkeleie: Int,
+        val klubb: String, // team.name
+        val distanse: String, // arr.NAME
+        val dato: LocalDate, // dato-delen av arr.firststart
+        val startnr: Int, // name.startno
+        val fornavn: String, // name.name
+        val etternavn: String, // name.ename
+        val klasse: String, // course.name
+        val klassekontigent: Int, // class.entryfee koblet mot eventor sine entryfees
+        val brikkeleie: Int, // name.ecardfee
         val etteranmelding: Int
     ) {
         fun navn(): String = "$fornavn $etternavn"

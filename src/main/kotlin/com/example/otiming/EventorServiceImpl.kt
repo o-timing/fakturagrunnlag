@@ -16,43 +16,37 @@ class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()
 
     override fun getEntries(eventId: Int): EntryList? {
-        val request = Request.Builder()
-            .url("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true")
-            .addHeader("ApiKey", config.apiKey)
-            .build()
-
-        val xmlString: String? = client.newCall(request).execute().use { response ->
-            response.body?.string()
-        }
-
-        return xmlString?.let { xmlStringAs<EntryList>(it) }
+        return getEntriesRaw(eventId)?.let { xmlStringAs<EntryList>(it) }
     }
 
+    fun getEntriesRaw(eventId: Int): String? {
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true")
+    }
 
     override fun getEntryFees(eventId: Int): EntryFeeList? {
-        val request = Request.Builder()
-            .url("https://eventor.orientering.no/api/entryfees/events/$eventId")
-            .addHeader("ApiKey", config.apiKey)
-            .build()
+        return getEntryFeesRaw(eventId)?.let { xmlStringAs<EntryFeeList>(it) }
+    }
 
-        val xmlString: String? = client.newCall(request).execute().use { response ->
-            response.body?.string()
-        }
-
-        return xmlString?.let { xmlStringAs<EntryFeeList>(it) }
+    fun getEntryFeesRaw(eventId: Int): String? {
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entryfees/events/$eventId")
     }
 
     override fun getEventClasses(eventId: Int): EventClassList? {
+        return getEventClassesRaw(eventId)?.let { xmlStringAs<EventClassList>(it) }
+    }
+
+    fun getEventClassesRaw(eventId: Int): String? {
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/eventclasses?eventId=$eventId&includeEntryFees=true")
+    }
+
+    private fun fetchStringFromEventorEndpoint(url: String): String? {
         val request = Request.Builder()
-            .url("https://eventor.orientering.no/api/eventclasses?eventId=$eventId&includeEntryFees=true")
+            .url(url)
             .addHeader("ApiKey", config.apiKey)
             .build()
 
-        val xmlString: String? = client.newCall(request).execute().use { response ->
+        return client.newCall(request).execute().use { response ->
             response.body?.string()
         }
-
-        return xmlString?.let { xmlStringAs<EventClassList>(it) }
     }
-
 }
