@@ -26,7 +26,7 @@ object OtimingDomain {
     data class LeiebrikkeRapportLinje(
         val id: Int,
         val ecard1: Int,
-        val ecard2: Int,
+        val ecard2: Int?,
         val etimingEcard: Int,
         val etimingEcardFee: Boolean,
         val leiebrikke_nummer: Int?,

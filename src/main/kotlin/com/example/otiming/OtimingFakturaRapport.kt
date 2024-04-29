@@ -3,11 +3,12 @@ package com.example.otiming
 import com.example.otiming.OtimingDomain.KontigentRapportLinje
 import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
 import com.example.otiming.OtimingDomain.BasisRapportLinje
+import okhttp3.internal.toImmutableList
 import org.springframework.jdbc.core.JdbcTemplate
 
 class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
 
-    fun selectBasicReport(): Map<Int, List<BasisRapportLinje>> {
+    fun selectBasicReport(): List<BasisRapportLinje> {
         return jdbcTemplate.query(
             """ 
                 select name.id,
@@ -36,10 +37,10 @@ class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
                 etternavn = rs.getString("etternavn").trim(),
                 klasse = rs.getString("eventor_class_name").trim()
             )
-        }.groupBy { it.id }
+        }.toImmutableList()
     }
 
-    fun selectLeiebrikkeRapport(): Map<Int, List<LeiebrikkeRapportLinje>> {
+    fun selectLeiebrikkeRapport(): Map<Int, LeiebrikkeRapportLinje> {
         return jdbcTemplate.query(
             """with etiming_ecard as (select name.id,
                                           name.ecard,
@@ -70,10 +71,12 @@ class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
                 rs.getString("leiebrikke_eier"),
                 rs.getString("leiebrikke_kortnavn")
             )
-        }.groupBy { it.id }
+        }.groupBy { it.id }.mapValues { entry ->
+            entry.value.first()
+        }
     }
 
-    fun selectKontigentRapport(): Map<Int, List<KontigentRapportLinje>> {
+    fun selectKontigentRapport(): Map<Int, KontigentRapportLinje> {
         return jdbcTemplate.query(
             """select name.id,
                        class.entryfee1                    as etiming_entryfee1,
@@ -98,7 +101,9 @@ class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
                 rs.getString("eventor_entryfee_calculation"),
                 rs.getDouble("eventor_entryfee_sum")
             )
-        }.groupBy { it.id }
+        }.groupBy { it.id }.mapValues { entry ->
+            entry.value.first()
+        }
     }
 
 }
