@@ -8,13 +8,13 @@ import java.nio.file.Paths
 
 class EventorFileService : AbstractEventorService() {
 
-    override fun getEntries(eventId: Int) =
+    override fun getEntries(eventId: EventId) =
         retrieveData<EntryList>("entries.xml")
 
-    override fun getEntryFees(eventId: Int) =
+    override fun getEntryFees(eventId: EventId) =
         retrieveData<EntryFeeList>("entryfees.xml")
 
-    override fun getEventClasses(eventId: Int) =
+    override fun getEventClasses(eventId: EventId) =
         retrieveData<EventClassList>("eventclasses.xml")
 
     private inline fun <reified T> retrieveData(fileName: String) =

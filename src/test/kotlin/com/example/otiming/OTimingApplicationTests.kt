@@ -20,9 +20,9 @@ class OTimingApplicationTests(
     fun contextLoads() {
         val eventorService = EventorFileService()
 
-        println(eventorService.getEntries(18000))
-        println(eventorService.getEntryFees(18000))
-        println(eventorService.getEventClasses(18000))
+        println(eventorService.getEntries(EventId(18000)))
+        println(eventorService.getEntryFees(EventId(18000)))
+        println(eventorService.getEventClasses(EventId(18000)))
     }
 
     @Test

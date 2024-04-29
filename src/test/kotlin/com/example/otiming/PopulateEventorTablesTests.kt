@@ -2,6 +2,7 @@ package com.example.otiming
 
 import generated.EntryFee
 import generated.EntryFeeList
+import generated.EntryList
 import generated.EventClass
 import generated.EventClassList
 import jakarta.xml.bind.JAXBContext
@@ -18,7 +19,25 @@ class PopulateEventorTablesTests(
     @Autowired val config: EventorConfig
 ) {
 
-    val eventId = 19449
+    val eventId: EventId = EventId(19449)
+
+    @Test
+    fun populateOtimingEventorRawWithEntries() {
+        val eventorService = EventorServiceImpl(config)
+
+        val xmlString: String? = eventorService.getEntriesRaw(eventId)
+
+        xmlString?.let {
+            OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
+                jdbcTemplate = jdbcTemplate,
+                eventId = eventId,
+                xmlString = it,
+                // TODO gjør dette om til en enum
+                endpoint = "entries",
+                endret = LocalDateTime.now()
+            )
+        }
+    }
 
     @Test
     fun populateOtimingEventorRawWithEventclasses() {
@@ -28,12 +47,12 @@ class PopulateEventorTablesTests(
 
         xmlString?.let {
             OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
-                jdbcTemplate,
-                eventId,
-                it,
+                jdbcTemplate = jdbcTemplate,
+                eventId = eventId,
+                xmlString = it,
                 // TODO gjør dette om til en enum
-                "eventclasses",
-                LocalDateTime.now()
+                endpoint = "eventclasses",
+                endret = LocalDateTime.now()
             )
         }
     }
@@ -46,14 +65,99 @@ class PopulateEventorTablesTests(
 
         xmlString?.let {
             OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
-                jdbcTemplate,
-                eventId,
-                it,
+                jdbcTemplate = jdbcTemplate,
+                eventId = eventId,
+                xmlString = it,
                 // TODO gjør dette om til en enum
-                "entryfees",
-                LocalDateTime.now()
+                endpoint = "entryfees",
+                endret = LocalDateTime.now()
             )
         }
+    }
+
+    @Test
+    fun populateOtimingEventorEntry() {
+        // les entryfees fra raw tabellen
+        val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "entries")
+
+        rawRow?.let { row ->
+            // parse som xml
+            val entryList = xmlStringAs<EntryList>(row.xmlString)
+
+            // iterer over og skriv hver enkelt rad til otiming_eventor_entryfees
+            entryList.entry.forEach { e ->
+                val entryId = e.entryId.toInternalId()
+                insertIntoOtimingEventorEntry(
+                    entryId = entryId,
+                    personId = e.competitor.person.personId.toInternalId(),
+                    eventId = e.eventId.toInternalId()
+                )
+                e.competitor.cCard.forEach { cc ->
+                    insertIntoOtimingEventorEntryCCard(
+                        entryId = entryId,
+                        ccardId = cc.cCardId.content.toInt(),
+                        ccardType = cc.punchingUnitType.value
+                    )
+                }
+                e.entryClass.forEach { ec ->
+                    insertIntoOptimingEventorEntryEventClass(
+                        entryId = entryId,
+                        eventClassId = ec.eventClassId.toInternalId()
+                    )
+                }
+                e.entryEntryFee.forEach { ef ->
+                    insertIntoOptimingEventorEntryEntryFee(
+                        entryId = entryId,
+                        entryFeeId = ef.entryFeeId.toInternalId(),
+                        sequence = ef.sequence.content.toInt()
+                    )
+                }
+            }
+        }
+    }
+
+
+    fun insertIntoOtimingEventorEntry(entryId: EntryId, personId: PersonId, eventId: EventId) {
+        jdbcTemplate.update(
+            """insert into otiming_eventor_entry (entryId, personId, eventId) 
+               values (?, ?, ?)
+            """.trimMargin(),
+            entryId.value,
+            personId.value,
+            eventId.value
+        )
+    }
+
+    fun insertIntoOtimingEventorEntryCCard(entryId: EntryId, ccardId: Int, ccardType: String) {
+        jdbcTemplate.update(
+            """insert into otiming_eventor_entry_ccard (entryId, ccardId, ccardType) 
+                values (?, ?, ?)
+            """.trimMargin(),
+            entryId.value,
+            ccardId,
+            ccardType
+        )
+    }
+
+    fun insertIntoOptimingEventorEntryEventClass(entryId: EntryId, eventClassId: EventClassId) {
+        jdbcTemplate.update(
+            """insert into otiming_eventor_entry_eventclass (entryId, eventClassId) 
+               values (?, ?)
+            """.trimMargin(),
+            entryId.value,
+            eventClassId.value
+        )
+    }
+
+    fun insertIntoOptimingEventorEntryEntryFee(entryId: EntryId, entryFeeId: EntryFeeId, sequence: Int) {
+        jdbcTemplate.update(
+            """insert into otiming_eventor_entry_entryfee (entryId, entryFeeId, sequence) 
+               values (?, ?, ?)
+            """.trimMargin(),
+            entryId.value,
+            entryFeeId.value,
+            sequence
+        )
     }
 
     @Test
@@ -67,37 +171,37 @@ class PopulateEventorTablesTests(
 
             // iterer over og skriv hver enkelt rad til otiming_eventor_entryfees
             eventClassList.eventClass.forEach { e: EventClass ->
-                skrivTilOtimingEventorEventclass(
-                    eventId,
-                    e.eventClassId.content.toInt(),
-                    e.name.content,
-                    e.classShortName.content
+                insertIntoOtimingEventorEventclass(
+                    eventId = eventId,
+                    eventClassId = e.eventClassId.content.toInt(),
+                    name = e.name.content,
+                    shortName = e.classShortName.content
                 )
                 e.classEntryFee.forEach { cef ->
-                    skrivTilOtimingEventorEventclassEntryfee(
-                        e.eventClassId.content.toInt(),
-                        cef.entryFeeId.content.toInt(),
-                        cef.sequence.content.toInt()
+                    insertIntoOtimingEventorEventclassEntryfee(
+                        eventClassId = e.eventClassId.content.toInt(),
+                        entryFeeId = cef.entryFeeId.content.toInt(),
+                        sequence = cef.sequence.content.toInt()
                     )
                 }
             }
         }
     }
 
-    fun skrivTilOtimingEventorEventclass(eventId: Int, eventClassId: Int, name: String, shortName: String) {
+    fun insertIntoOtimingEventorEventclass(eventId: EventId, eventClassId: Int, name: String, shortName: String) {
         jdbcTemplate.update(
             """
                 insert into otiming_eventor_eventclass (eventClassId, eventId, name, shortName)
                 values (?, ?, ?, ?)
             """.trimIndent(),
             eventClassId,
-            eventId,
+            eventId.value,
             name,
             shortName
         )
     }
 
-    fun skrivTilOtimingEventorEventclassEntryfee(eventClassId: Int, entryFeeId: Int, sequence: Int) {
+    fun insertIntoOtimingEventorEventclassEntryfee(eventClassId: Int, entryFeeId: Int, sequence: Int) {
         jdbcTemplate.update(
             """
                 insert into otiming_eventor_eventclass_entryfee (eventClassId, entryFeeId, sequence)
@@ -119,7 +223,7 @@ class PopulateEventorTablesTests(
 
             // iterer over og skriv hver enkelt rad til otiming_eventor_entryfees
             entryfeelist.entryFee.forEach { e: EntryFee ->
-                skrivTilOtimingEventorEntryfee(
+                insertIntoTilOtimingEventorEntryfee(
                     eventId,
                     e
                 )
@@ -136,17 +240,17 @@ class PopulateEventorTablesTests(
 
 
     // TODO fiks denne til å returnere en liste
-    fun lesFraOtimingEventorRaw(eventId: Int, endpoint: String): OtimingEventorRawRow? {
+    fun lesFraOtimingEventorRaw(eventId: EventId, endpoint: String): OtimingEventorRawRow? {
         return jdbcTemplate.queryForObject<OtimingEventorRawRow>(
             """select eventId, endpoint, endret, xml
                 | from otiming_eventor_raw
                 | where eventId = ?
                 | and endpoint = ?
             """.trimMargin(),
-            arrayOf(eventId, endpoint)
+            arrayOf(eventId.value, endpoint)
         ) { response, _ ->
             OtimingEventorRawRow(
-                response.getInt("eventId"),
+                EventId(response.getInt("eventId")),
                 response.getString("endpoint"),
                 response.getObject("endret", LocalDateTime::class.java),
                 response.getString("xml"),
@@ -154,18 +258,18 @@ class PopulateEventorTablesTests(
         }
     }
 
-    fun skrivTilOtimingEventorEntryfee(eventId: Int, entryfee: EntryFee) {
+    fun insertIntoTilOtimingEventorEntryfee(eventId: EventId, entryfee: EntryFee) {
         jdbcTemplate.update(
             """
                 insert into otiming_eventor_entryfee (entryFeeId, eventId, name, amount)
                 values (?, ?, ?, ?)
             """.trimIndent(),
-            entryfee.entryFeeId.content.toInt(), eventId, entryfee.name.content, entryfee.amount.content.toInt()
+            entryfee.entryFeeId.content.toInt(), eventId.value, entryfee.name.content, entryfee.amount.content.toInt()
         )
     }
 
     data class OtimingEventorRawRow(
-        val eventId: Int,
+        val eventId: EventId,
         val endpoint: String,
         val endret: LocalDateTime,
         val xmlString: String,

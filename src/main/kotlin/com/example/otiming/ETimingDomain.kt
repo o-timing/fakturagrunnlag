@@ -30,3 +30,37 @@ data class Leiebrikke(
 @JvmInline
 value class Brikkenummer(val value: String)
 
+@JvmInline
+value class EntryId(val value: Int)
+
+fun generated.EntryId.toInternalId(): EntryId {
+    return EntryId(content.toInt())
+}
+
+@JvmInline
+value class EntryFeeId(val value: Int)
+
+fun generated.EntryFeeId.toInternalId(): EntryFeeId {
+    return EntryFeeId(content.toInt())
+}
+
+@JvmInline
+value class EventId(val value: Int)
+
+fun generated.EventId.toInternalId(): EventId {
+    return EventId(content.toInt())
+}
+
+@JvmInline
+value class PersonId(val value: Int)
+
+fun generated.PersonId.toInternalId(): PersonId {
+    return PersonId(content.toInt())
+}
+
+@JvmInline
+value class EventClassId(val value: Int)
+
+fun generated.EventClassId.toInternalId(): EventClassId {
+    return EventClassId(content.toInt())
+}

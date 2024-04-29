@@ -7,9 +7,9 @@ import jakarta.xml.bind.JAXBContext
 import java.io.StringReader
 
 abstract class AbstractEventorService {
-    abstract fun getEntries(eventId: Int): EntryList?
-    abstract fun getEntryFees(eventId: Int): EntryFeeList?
-    abstract fun getEventClasses(eventId: Int): EventClassList?
+    abstract fun getEntries(eventId: EventId): EntryList?
+    abstract fun getEntryFees(eventId: EventId): EntryFeeList?
+    abstract fun getEventClasses(eventId: EventId): EventClassList?
 
     inline fun <reified T> xmlStringAs(xmlString: String): T {
         val context = JAXBContext.newInstance(T::class.java)

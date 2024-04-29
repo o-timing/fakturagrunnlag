@@ -15,27 +15,27 @@ data class EventorConfig(
 class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()
 
-    override fun getEntries(eventId: Int): EntryList? {
+    override fun getEntries(eventId: EventId): EntryList? {
         return getEntriesRaw(eventId)?.let { xmlStringAs<EntryList>(it) }
     }
 
-    fun getEntriesRaw(eventId: Int): String? {
-        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true")
+    fun getEntriesRaw(eventId: EventId): String? {
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true&includePersonElement=true")
     }
 
-    override fun getEntryFees(eventId: Int): EntryFeeList? {
+    override fun getEntryFees(eventId: EventId): EntryFeeList? {
         return getEntryFeesRaw(eventId)?.let { xmlStringAs<EntryFeeList>(it) }
     }
 
-    fun getEntryFeesRaw(eventId: Int): String? {
+    fun getEntryFeesRaw(eventId: EventId): String? {
         return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entryfees/events/$eventId")
     }
 
-    override fun getEventClasses(eventId: Int): EventClassList? {
+    override fun getEventClasses(eventId: EventId): EventClassList? {
         return getEventClassesRaw(eventId)?.let { xmlStringAs<EventClassList>(it) }
     }
 
-    fun getEventClassesRaw(eventId: Int): String? {
+    fun getEventClassesRaw(eventId: EventId): String? {
         return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/eventclasses?eventId=$eventId&includeEntryFees=true")
     }
 
