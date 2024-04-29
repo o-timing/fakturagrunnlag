@@ -10,4 +10,5 @@ object OtimingEventorDbRepo {
             eventId.value, endpoint, endret, xmlString
         )
     }
+
 }
