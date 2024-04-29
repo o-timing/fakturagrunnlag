@@ -1,9 +1,77 @@
 package com.example.otiming
 
 import com.example.otiming.OtimingDomain.KontigentRapportLinje
+import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
+import com.example.otiming.OtimingDomain.BasisRapportLinje
 import org.springframework.jdbc.core.JdbcTemplate
 
 class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
+
+    fun selectBasicReport(): Map<Int, List<BasisRapportLinje>> {
+        return jdbcTemplate.query(
+            """ 
+                select name.id,
+                       team.name as klubb,
+                       arr.NAME as distanse,
+                       CONVERT(DATE, day.firststart) as dato,
+                       name.startno as startnr,
+                       name.name as fornavn,
+                       name.ename as etternavn,
+                       otiming_eventor_eventclass.name as eventor_class_name
+                from name
+                         join team on (name.team = team.code)
+                         join arr on (name.arr = arr.arr and name.sub = arr.SUB)
+                         join day on (arr.SUB = day.day)
+                         join class on (name.class = class.code)
+                         join otiming_eventor_eventclass on (name.class = otiming_eventor_eventclass.eventClassId)
+            """.trimIndent()
+        ) { rs, _ ->
+            BasisRapportLinje(
+                id = rs.getInt("id"),
+                klubb = rs.getString("klubb"),
+                distanse = rs.getString("distanse").trim(),
+                dato = rs.getString("dato").trim(),
+                startnr = rs.getString("startnr")?.trim(),
+                fornavn = rs.getString("fornavn").trim(),
+                etternavn = rs.getString("etternavn").trim(),
+                klasse = rs.getString("eventor_class_name").trim()
+            )
+        }.groupBy { it.id }
+    }
+
+    fun selectLeiebrikkeRapport(): Map<Int, List<LeiebrikkeRapportLinje>> {
+        return jdbcTemplate.query(
+            """with etiming_ecard as (select name.id,
+                                          name.ecard,
+                                          name.ecard2,
+                                          coalesce(name.ecard, name.ecard2) as etiming_ecard,
+                                          name.ecardfee                     as etiming_ecardfee
+                                       from name)
+                select name.id,
+                       etiming_ecard.ecard,
+                       etiming_ecard.ecard2,
+                       etiming_ecard.etiming_ecard,
+                       etiming_ecard.etiming_ecardfee,
+                       otiming_leiebrikker.brikkenummer as leiebrikke_nummer,
+                       otiming_leiebrikker.eier         as leiebrikke_eier,
+                       otiming_leiebrikker.kortnavn     as leiebrikke_kortnavn
+                from name
+                     join etiming_ecard on (name.id = etiming_ecard.id)
+                     left join otiming_leiebrikker on (otiming_leiebrikker.brikkenummer = etiming_ecard.ecard)
+            """.trimIndent()
+        ) { rs, _ ->
+            LeiebrikkeRapportLinje(
+                id = rs.getInt("id"),
+                rs.getInt("ecard"),
+                rs.getInt("ecard2"),
+                rs.getInt("etiming_ecard"),
+                rs.getBoolean("etiming_ecardfee"),
+                rs.getInt("leiebrikke_nummer"),
+                rs.getString("leiebrikke_eier"),
+                rs.getString("leiebrikke_kortnavn")
+            )
+        }.groupBy { it.id }
+    }
 
     fun selectKontigentRapport(): Map<Int, List<KontigentRapportLinje>> {
         return jdbcTemplate.query(
