@@ -1,5 +1,6 @@
 package com.example.otiming
 
+import com.example.otiming.ExcelFakturaTests.ExcelHeader
 import com.example.otiming.OtimingDomain.BasisRapportLinje
 import com.example.otiming.OtimingDomain.KontigentRapportLinje
 import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
@@ -191,6 +192,18 @@ data class Fakturarapportlinje(
             if (utledetLeiebrikke) leiebrikkeLeie.toDouble() else 0.0
         )
 
+        row.createCell(ExcelHeader2.Kontigent.colIndex).setCellValue(etimingKontigentSum)
+
+        row.createCell(ExcelHeader2.KontigentNavn.colIndex).setCellValue(eventorKontigentNavn)
+
+        val totalCell = row.createCell(ExcelHeader2.Total.colIndex)
+        totalCell.setCellStyle(currencyStyle)
+        val formula =
+            "SUM(${ExcelHeader2.Leiebrikke.colName}${row.rowNum + 1}:${ExcelHeader2.Kontigent.colName}${row.rowNum + 1})"
+        totalCell.setCellFormula(formula)
+
+        formulaEvaluator.evaluateFormulaCell(totalCell)
+
         return row
     }
 }
@@ -206,4 +219,7 @@ enum class ExcelHeader2(val colIndex: Int, val colName: String) {
     Navn(6, "G"),
     Klasse(7, "H"),
     Leiebrikke(8, "I"),
+    Kontigent(9, "J"),
+    KontigentNavn(10, "K"),
+    Total(11, "L"),
 }
