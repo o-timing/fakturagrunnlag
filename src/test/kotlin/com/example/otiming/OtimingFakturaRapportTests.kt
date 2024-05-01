@@ -115,7 +115,7 @@ class OtimingFakturaRapportTests(
                 klubb = it.klubb,
                 distanse = it.distanse,
                 dato = it.dato,
-                startnr = it.startnr,
+                startnr = it.startnr?.toDouble(),
                 fornavn = it.fornavn,
                 etternavn = it.etternavn,
                 klasse = it.klasse,
@@ -140,7 +140,7 @@ data class Fakturarapportlinje(
     val klubb: String,
     val distanse: String,
     val dato: String,
-    val startnr: String?,
+    val startnr: Double?,
     val fornavn: String,
     val etternavn: String,
     val klasse: String,
@@ -167,16 +167,18 @@ data class Fakturarapportlinje(
                 (etimingKontigent3 ?: 0.0)
 
     fun insertIntoRow(row: XSSFRow, currencyStyle: CellStyle, dateStyle: CellStyle, formulaEvaluator: XSSFFormulaEvaluator): XSSFRow {
-        row.createCell(ExcelHeader.Klubb.colIndex).setCellValue(klubb)
-        row.createCell(ExcelHeader.Distanse.colIndex).setCellValue(distanse)
-        val datoCell = row.createCell(ExcelHeader.Dato.colIndex)
+        row.createCell(ExcelHeader2.Klubb.colIndex).setCellValue(klubb)
+        row.createCell(ExcelHeader2.Distanse.colIndex).setCellValue(distanse)
+        val datoCell = row.createCell(ExcelHeader2.Dato.colIndex)
         datoCell.setCellValue(dato)
         datoCell.setCellStyle(dateStyle)
-        row.createCell(ExcelHeader.Startnr.colIndex).setCellValue(startnr) // todo gjør startnr om til en int
-        row.createCell(ExcelHeader.Fornavn.colIndex).setCellValue(fornavn)
-        row.createCell(ExcelHeader.Etternavn.colIndex).setCellValue(etternavn)
-        row.createCell(ExcelHeader.Navn.colIndex).setCellValue(navn)
-        row.createCell(ExcelHeader.Klasse.colIndex).setCellValue(klasse)
+        startnr?.let {
+            row.createCell(ExcelHeader2.Startnr.colIndex).setCellValue(it)
+        }
+        row.createCell(ExcelHeader2.Fornavn.colIndex).setCellValue(fornavn)
+        row.createCell(ExcelHeader2.Etternavn.colIndex).setCellValue(etternavn)
+        row.createCell(ExcelHeader2.Navn.colIndex).setCellValue(navn)
+        row.createCell(ExcelHeader2.Klasse.colIndex).setCellValue(klasse)
 
         return row
     }
