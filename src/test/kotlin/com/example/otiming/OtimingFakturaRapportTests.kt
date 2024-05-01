@@ -1,6 +1,5 @@
 package com.example.otiming
 
-import com.example.otiming.ExcelFakturaTests.ExcelHeader
 import com.example.otiming.OtimingDomain.BasisRapportLinje
 import com.example.otiming.OtimingDomain.KontigentRapportLinje
 import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
@@ -120,6 +119,7 @@ class OtimingFakturaRapportTests(
                 fornavn = it.fornavn,
                 etternavn = it.etternavn,
                 klasse = it.klasse,
+                brikkenummer = leiebrikkerapportlinje?.etimingEcard,
                 etimingEcardFee = leiebrikkerapportlinje?.etimingEcardFee,
                 etimingEcard2 = leiebrikkerapportlinje?.ecard2,
                 registrertLeiebrikkeNummer = leiebrikkerapportlinje?.leiebrikke_nummer,
@@ -145,6 +145,7 @@ data class Fakturarapportlinje(
     val fornavn: String,
     val etternavn: String,
     val klasse: String,
+    val brikkenummer: Int?,
     val etimingEcardFee: Boolean?,
     val etimingEcard2: Int?,
     val registrertLeiebrikkeNummer: Int?,
@@ -188,38 +189,51 @@ data class Fakturarapportlinje(
         row.createCell(ExcelHeader2.Navn.colIndex).setCellValue(navn)
         row.createCell(ExcelHeader2.Klasse.colIndex).setCellValue(klasse)
 
-        row.createCell(ExcelHeader2.Leiebrikke.colIndex).setCellValue(
-            if (utledetLeiebrikke) leiebrikkeLeie.toDouble() else 0.0
-        )
+        brikkenummer?.let {
+            row.createCell(ExcelHeader2.Brikkenummer.colIndex).setCellValue(brikkenummer.toDouble())
+        }
 
-        row.createCell(ExcelHeader2.Kontigent.colIndex).setCellValue(etimingKontigentSum)
+        val leiebrikkeCell = row.createCell(ExcelHeader2.Leiebrikke.colIndex)
+        leiebrikkeCell.setCellStyle(currencyStyle)
+        if (utledetLeiebrikke) leiebrikkeCell.setCellValue(leiebrikkeLeie.toDouble())
+
+        val kontigentCell = row.createCell(ExcelHeader2.Kontigent.colIndex)
+        kontigentCell.setCellValue(etimingKontigentSum)
+        kontigentCell.setCellStyle(currencyStyle)
 
         row.createCell(ExcelHeader2.KontigentNavn.colIndex).setCellValue(eventorKontigentNavn)
+
+        row.sheet.setColumnHidden(ExcelHeader2.KontigentNavn.colIndex, true)
 
         val totalCell = row.createCell(ExcelHeader2.Total.colIndex)
         totalCell.setCellStyle(currencyStyle)
         val formula =
             "SUM(${ExcelHeader2.Leiebrikke.colName}${row.rowNum + 1}:${ExcelHeader2.Kontigent.colName}${row.rowNum + 1})"
         totalCell.setCellFormula(formula)
-
         formulaEvaluator.evaluateFormulaCell(totalCell)
+
+        row.createCell(ExcelHeader2.Kommentar.colIndex)
 
         return row
     }
 }
 
 
-enum class ExcelHeader2(val colIndex: Int, val colName: String) {
-    Klubb(0, "A"),
-    Distanse(1, "B"),
-    Dato(2, "C"),
-    Startnr(3, "D"),
-    Fornavn(4, "E"),
-    Etternavn(5, "F"),
-    Navn(6, "G"),
-    Klasse(7, "H"),
-    Leiebrikke(8, "I"),
-    Kontigent(9, "J"),
-    KontigentNavn(10, "K"),
-    Total(11, "L"),
+enum class ExcelHeader2(val colIndex: Int) {
+    Klubb(0),
+    Distanse(1),
+    Dato(2),
+    Startnr(3),
+    Fornavn(4),
+    Etternavn(5),
+    Navn(6),
+    Klasse(7),
+    Brikkenummer(8),
+    Leiebrikke(9),
+    Kontigent(10),
+    KontigentNavn(11),
+    Total(12),
+    Kommentar(13);
+
+    val colName = ('A' + colIndex).toString()
 }
