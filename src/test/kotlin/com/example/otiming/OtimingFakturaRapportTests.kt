@@ -1,12 +1,10 @@
 package com.example.otiming
 
-import com.example.otiming.ExcelFakturaTests.ExcelHeader
 import com.example.otiming.OtimingDomain.BasisRapportLinje
 import com.example.otiming.OtimingDomain.KontigentRapportLinje
 import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
 import org.apache.poi.hssf.usermodel.HSSFDataFormat
 import org.apache.poi.ss.usermodel.CellStyle
-import org.apache.poi.ss.usermodel.DataFormatter
 import org.apache.poi.ss.util.CellRangeAddress
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFRow
@@ -22,6 +20,8 @@ class OtimingFakturaRapportTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
 ) {
     val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
+
+    val LEIEBRIKKE_LEIE: Int = 30
 
     @Test
     fun basisRapport() {
@@ -83,18 +83,18 @@ class OtimingFakturaRapportTests(
         input.forEach {
             rownum++
             val row: XSSFRow = workSheet.createRow(rownum)
-            it.insertIntoRow(row, currencyStyle, dateStyle, formulaEvaluator)
+            it.insertIntoRow(row, currencyStyle, dateStyle, formulaEvaluator, LEIEBRIKKE_LEIE)
         }
 
         workSheet.createFreezePane(0, 1)
 
         workSheet.setAutoFilter(
             CellRangeAddress(
-            /* firstRow = */ 0,
-            /* lastRow = */ input.size,
-            /* firstCol = */ 0,
-            /* lastCol = */ ExcelHeader2.entries.map { it.colIndex }.max()
-        )
+                /* firstRow = */ 0,
+                /* lastRow = */ input.size,
+                /* firstCol = */ 0,
+                /* lastCol = */ ExcelHeader2.entries.map { it.colIndex }.max()
+            )
         )
 
         return workbook
@@ -158,15 +158,22 @@ data class Fakturarapportlinje(
 ) {
     val navn: String = "$fornavn $etternavn"
 
-    val utledetLeiebrikke: Boolean =
-        etimingEcardFee ?: false || etimingEcard2 != null || registrertLeiebrikkeNummer != null
+    val etimingLeiebrikke = (etimingEcard2 != null && etimingEcard2 != 0) || (etimingEcardFee ?: false)
+    val otimingLeiebrikke = registrertLeiebrikkeNummer != null && registrertLeiebrikkeNummer != 0
+    val utledetLeiebrikke: Boolean = etimingLeiebrikke || otimingLeiebrikke
 
     val etimingKontigentSum: Double =
         (etimingKontigent1 ?: 0.0) +
                 (etimingKontigent2 ?: 0.0) +
                 (etimingKontigent3 ?: 0.0)
 
-    fun insertIntoRow(row: XSSFRow, currencyStyle: CellStyle, dateStyle: CellStyle, formulaEvaluator: XSSFFormulaEvaluator): XSSFRow {
+    fun insertIntoRow(
+        row: XSSFRow,
+        currencyStyle: CellStyle,
+        dateStyle: CellStyle,
+        formulaEvaluator: XSSFFormulaEvaluator,
+        leiebrikkeLeie: Int
+    ): XSSFRow {
         row.createCell(ExcelHeader2.Klubb.colIndex).setCellValue(klubb)
         row.createCell(ExcelHeader2.Distanse.colIndex).setCellValue(distanse)
         val datoCell = row.createCell(ExcelHeader2.Dato.colIndex)
@@ -179,6 +186,10 @@ data class Fakturarapportlinje(
         row.createCell(ExcelHeader2.Etternavn.colIndex).setCellValue(etternavn)
         row.createCell(ExcelHeader2.Navn.colIndex).setCellValue(navn)
         row.createCell(ExcelHeader2.Klasse.colIndex).setCellValue(klasse)
+
+        row.createCell(ExcelHeader2.Leiebrikke.colIndex).setCellValue(
+            if (utledetLeiebrikke) leiebrikkeLeie.toDouble() else 0.0
+        )
 
         return row
     }
@@ -193,5 +204,6 @@ enum class ExcelHeader2(val colIndex: Int, val colName: String) {
     Fornavn(4, "E"),
     Etternavn(5, "F"),
     Navn(6, "G"),
-    Klasse(7, "H")
+    Klasse(7, "H"),
+    Leiebrikke(8, "I"),
 }
