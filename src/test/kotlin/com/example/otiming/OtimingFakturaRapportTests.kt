@@ -1,13 +1,21 @@
 package com.example.otiming
 
+import com.example.otiming.ExcelFakturaTests.ExcelHeader
+import com.example.otiming.OtimingDomain.BasisRapportLinje
+import com.example.otiming.OtimingDomain.KontigentRapportLinje
+import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
+import org.apache.poi.hssf.usermodel.HSSFDataFormat
+import org.apache.poi.ss.usermodel.CellStyle
+import org.apache.poi.ss.usermodel.DataFormatter
+import org.apache.poi.ss.util.CellRangeAddress
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
+import org.apache.poi.xssf.usermodel.XSSFRow
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
-import com.example.otiming.OtimingDomain.KontigentRapportLinje
-import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
-import com.example.otiming.OtimingDomain.BasisRapportLinje
-import java.time.LocalDate
+import java.io.File
 
 @SpringBootTest
 class OtimingFakturaRapportTests(
@@ -36,11 +44,69 @@ class OtimingFakturaRapportTests(
 
     @Test
     fun fakturarapport() {
+        val fakturarapportlinjer = createFakturarapportlinjer()
+
+        fakturarapportlinjer.forEach { println(it) }
+    }
+
+    @Test
+    fun fakturagrunnlag_excel() {
+        val fakturarapportlinjer = createFakturarapportlinjer()
+        val workbook = createFakturaWorkbook(fakturarapportlinjer)
+
+        val file = File("/Users/eirikm/projects/orientering/o-timing/faktura2/test_output2.xlsx")
+        workbook.write(file.outputStream())
+    }
+
+    private fun createFakturaWorkbook(input: List<Fakturarapportlinje>): XSSFWorkbook {
+        val workbook = XSSFWorkbook()
+        val workSheet = workbook.createSheet()
+
+        val currencyStyle = workbook.createCellStyle()
+        currencyStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"))
+
+        val dateStyle = workbook.createCellStyle()
+        dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("d-mmm-yy"))
+
+        val formulaEvaluator: XSSFFormulaEvaluator =
+            workbook.getCreationHelper().createFormulaEvaluator()
+
+        val headerRow = workSheet.createRow(0)
+        ExcelHeader2.entries.forEach {
+            val cell =
+                headerRow
+                    .createCell(it.colIndex)
+            cell.setCellValue(it.name)
+        }
+
+        var rownum = 0
+        input.forEach {
+            rownum++
+            val row: XSSFRow = workSheet.createRow(rownum)
+            it.insertIntoRow(row, currencyStyle, dateStyle, formulaEvaluator)
+        }
+
+        workSheet.createFreezePane(0, 1)
+
+        workSheet.setAutoFilter(
+            CellRangeAddress(
+            /* firstRow = */ 0,
+            /* lastRow = */ input.size,
+            /* firstCol = */ 0,
+            /* lastCol = */ ExcelHeader2.entries.map { it.colIndex }.max()
+        )
+        )
+
+        return workbook
+    }
+
+
+    fun createFakturarapportlinjer(): List<Fakturarapportlinje> {
         val basisrapportlinjer: List<BasisRapportLinje> = otimingFakturaRapport.selectBasicReport()
         val leiebrikkeRapport = otimingFakturaRapport.selectLeiebrikkeRapport()
         val kontigentRapport = otimingFakturaRapport.selectKontigentRapport()
 
-        basisrapportlinjer.map {
+        return basisrapportlinjer.map {
             val leiebrikkerapportlinje: LeiebrikkeRapportLinje? = leiebrikkeRapport.get(it.id)
             val kontigentRapportLinje: KontigentRapportLinje? = kontigentRapport.get(it.id)
 
@@ -65,9 +131,8 @@ class OtimingFakturaRapportTests(
                 eventorKontigentKalkulasjon = kontigentRapportLinje?.eventorEntryFeeCalculation,
                 eventorKontigentSum = kontigentRapportLinje?.eventorEntryFeeSum,
             )
-        }.forEach { println(it) }
+        }
     }
-
 }
 
 data class Fakturarapportlinje(
@@ -91,7 +156,8 @@ data class Fakturarapportlinje(
     val eventorKontigentKalkulasjon: String?,
     val eventorKontigentSum: Double?
 ) {
-    val navn: String = fornavn + " " + etternavn
+    val navn: String = "$fornavn $etternavn"
+
     val utledetLeiebrikke: Boolean =
         etimingEcardFee ?: false || etimingEcard2 != null || registrertLeiebrikkeNummer != null
 
@@ -99,4 +165,31 @@ data class Fakturarapportlinje(
         (etimingKontigent1 ?: 0.0) +
                 (etimingKontigent2 ?: 0.0) +
                 (etimingKontigent3 ?: 0.0)
+
+    fun insertIntoRow(row: XSSFRow, currencyStyle: CellStyle, dateStyle: CellStyle, formulaEvaluator: XSSFFormulaEvaluator): XSSFRow {
+        row.createCell(ExcelHeader.Klubb.colIndex).setCellValue(klubb)
+        row.createCell(ExcelHeader.Distanse.colIndex).setCellValue(distanse)
+        val datoCell = row.createCell(ExcelHeader.Dato.colIndex)
+        datoCell.setCellValue(dato)
+        datoCell.setCellStyle(dateStyle)
+        row.createCell(ExcelHeader.Startnr.colIndex).setCellValue(startnr) // todo gjør startnr om til en int
+        row.createCell(ExcelHeader.Fornavn.colIndex).setCellValue(fornavn)
+        row.createCell(ExcelHeader.Etternavn.colIndex).setCellValue(etternavn)
+        row.createCell(ExcelHeader.Navn.colIndex).setCellValue(navn)
+        row.createCell(ExcelHeader.Klasse.colIndex).setCellValue(klasse)
+
+        return row
+    }
+}
+
+
+enum class ExcelHeader2(val colIndex: Int, val colName: String) {
+    Klubb(0, "A"),
+    Distanse(1, "B"),
+    Dato(2, "C"),
+    Startnr(3, "D"),
+    Fornavn(4, "E"),
+    Etternavn(5, "F"),
+    Navn(6, "G"),
+    Klasse(7, "H")
 }
