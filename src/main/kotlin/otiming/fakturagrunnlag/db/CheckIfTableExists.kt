@@ -1,4 +1,4 @@
-package otiming.fakturagrunnlag
+package otiming.fakturagrunnlag.db
 
 import org.springframework.jdbc.core.JdbcTemplate
 

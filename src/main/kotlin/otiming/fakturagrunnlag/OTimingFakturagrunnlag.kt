@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
+import otiming.fakturagrunnlag.db.DbMigrations
 
 private val logger = KotlinLogging.logger {}
 
@@ -20,6 +21,8 @@ class OTimingFakturagrunnlag(
     val eventorService = EventorServiceImpl(config.eventor)
     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
+    val dbMigrations = DbMigrations(jdbcTemplate)
+
     // TODO:
     // - skrive test som ikke krever at vi kontakter eventor
     // - skriv til database
@@ -27,18 +30,16 @@ class OTimingFakturagrunnlag(
     override fun run(vararg args: String?) {
         // TODO skriv ut config
         logger.info { "Databasenavn: ${config.emit.databasenavn}" }
-        if (config.eventor.apiKey.isNullOrEmpty()) {
-            logger.error { "Eventor API-KEY is not set"}
+        if (config.eventor.apiKey.isBlank()) {
+            logger.error { "Eventor API-KEY is not set" }
         } else {
             logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
         }
 
-
+        dbMigrations.migrate()
 
         val eventIds = eTimingDbService.findEventIds()
         val eventId = eventIds[0]
-
-
 
 //        val entries = eventorService.getEntries(eventId)
 //        logger.info { entries }
