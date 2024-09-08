@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.internal.toImmutableList

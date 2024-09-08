@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord

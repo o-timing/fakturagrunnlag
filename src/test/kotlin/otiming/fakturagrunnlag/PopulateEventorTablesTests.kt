@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import generated.EntryFee
 import generated.EntryFeeList
@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 @SpringBootTest
 class PopulateEventorTablesTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
-    @Autowired val config: EventorConfig
+    @Autowired val config: otiming.fakturagrunnlag.EventorConfig
 ) {
 
     val eventId: EventId = EventId(19104)

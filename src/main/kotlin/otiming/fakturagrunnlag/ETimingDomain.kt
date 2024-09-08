@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 @JvmInline
 value class EventorParticipantId(val value: String)

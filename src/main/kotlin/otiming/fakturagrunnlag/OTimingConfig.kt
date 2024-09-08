@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

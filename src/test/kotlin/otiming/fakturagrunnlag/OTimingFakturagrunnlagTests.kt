@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 @SpringBootTest
 class OTimingFakturagrunnlagTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
-    @Autowired val config: EventorConfig
+    @Autowired val config: otiming.fakturagrunnlag.EventorConfig
 ) {
 
     // TODO

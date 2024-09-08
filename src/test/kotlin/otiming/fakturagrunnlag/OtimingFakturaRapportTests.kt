@@ -1,8 +1,8 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
-import com.example.otiming.OtimingDomain.BasisRapportLinje
-import com.example.otiming.OtimingDomain.KontigentRapportLinje
-import com.example.otiming.OtimingDomain.LeiebrikkeRapportLinje
+import otiming.fakturagrunnlag.OtimingDomain.BasisRapportLinje
+import otiming.fakturagrunnlag.OtimingDomain.KontigentRapportLinje
+import otiming.fakturagrunnlag.OtimingDomain.LeiebrikkeRapportLinje
 import org.apache.poi.hssf.usermodel.HSSFDataFormat
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.util.CellRangeAddress

@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import okhttp3.internal.toImmutableList
 import org.junit.jupiter.api.Test

@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import generated.EntryFeeList
 import generated.EntryList
@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.boot.context.properties.ConfigurationProperties
 
-class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
+class EventorServiceImpl(val config: otiming.fakturagrunnlag.EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()
 
     override fun getEntries(eventId: EventId): EntryList? {

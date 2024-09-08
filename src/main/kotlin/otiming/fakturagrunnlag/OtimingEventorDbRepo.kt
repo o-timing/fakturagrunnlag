@@ -1,4 +1,4 @@
-package com.example.otiming
+package otiming.fakturagrunnlag
 
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDateTime
