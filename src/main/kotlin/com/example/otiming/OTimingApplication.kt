@@ -1,15 +1,12 @@
 package com.example.otiming
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import okhttp3.internal.toImmutableList
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
-import java.sql.ResultSet
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,7 +26,7 @@ class OTimingApplication(
 
     override fun run(vararg args: String?) {
         // TODO skriv ut config
-        logger.info { "Databasenavn: ${config.emit.database}" }
+        logger.info { "Databasenavn: ${config.emit.databasenavn}" }
         if (config.eventor.apiKey.isNullOrEmpty()) {
             logger.error { "Eventor API-KEY is not set"}
         } else {
@@ -38,6 +35,8 @@ class OTimingApplication(
 
         val eventIds = eTimingDbService.findEventIds()
         val eventId = eventIds[0]
+
+
 
 //        val entries = eventorService.getEntries(eventId)
 //        logger.info { entries }
