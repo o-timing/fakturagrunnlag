@@ -21,8 +21,6 @@ class OTimingFakturagrunnlag(
     val eventorService = EventorServiceImpl(config.eventor)
     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
-    val dbMigrations = DbMigrations(jdbcTemplate)
-
     // TODO:
     // - skrive test som ikke krever at vi kontakter eventor
     // - skriv til database
@@ -35,8 +33,6 @@ class OTimingFakturagrunnlag(
         } else {
             logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
         }
-
-        dbMigrations.migrate()
 
         val eventIds = eTimingDbService.findEventIds()
         if (eventIds.isEmpty()) logger.error { "Fant ingen eventId i databasen" }
