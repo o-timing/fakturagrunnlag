@@ -20,7 +20,7 @@ class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     }
 
     fun getEntriesRaw(eventId: EventId): String? {
-        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entries?eventIds=$eventId&includeEntryFees=true&includePersonElement=true")
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entries?eventIds=${eventId.value}&includeEntryFees=true&includePersonElement=true")
     }
 
     override fun getEntryFees(eventId: EventId): EntryFeeList? {
@@ -28,7 +28,7 @@ class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     }
 
     fun getEntryFeesRaw(eventId: EventId): String? {
-        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entryfees/events/$eventId")
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/entryfees/events/${eventId.value}")
     }
 
     override fun getEventClasses(eventId: EventId): EventClassList? {
@@ -36,7 +36,7 @@ class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     }
 
     fun getEventClassesRaw(eventId: EventId): String? {
-        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/eventclasses?eventId=$eventId&includeEntryFees=true")
+        return fetchStringFromEventorEndpoint("https://eventor.orientering.no/api/eventclasses?eventId=${eventId.value}&includeEntryFees=true")
     }
 
     private fun fetchStringFromEventorEndpoint(url: String): String? {

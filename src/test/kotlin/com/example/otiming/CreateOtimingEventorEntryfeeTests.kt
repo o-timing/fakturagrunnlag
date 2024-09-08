@@ -11,7 +11,7 @@ class CreateOtimingEventorEntryfeeTests(
 ) {
 
     @Test
-    fun createOtiminEventorRawTest() {
+    fun createOtimingEventorEntryFeeTest() {
         // sjekk om tabellen finnes
         if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_entryfee")) {
             // hvis den ikke finnes opprett tabellen

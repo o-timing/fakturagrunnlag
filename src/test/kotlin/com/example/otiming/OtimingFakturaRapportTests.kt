@@ -21,7 +21,7 @@ class OtimingFakturaRapportTests(
 ) {
     val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
 
-    val LEIEBRIKKE_LEIE: Int = 30
+    val LEIEBRIKKE_LEIE: Int = 50
 
     @Test
     fun basisRapport() {
@@ -198,7 +198,7 @@ data class Fakturarapportlinje(
         if (utledetLeiebrikke) leiebrikkeCell.setCellValue(leiebrikkeLeie.toDouble())
 
         val kontigentCell = row.createCell(ExcelHeader2.Kontigent.colIndex)
-        kontigentCell.setCellValue(etimingKontigentSum)
+        kontigentCell.setCellValue(eventorKontigentSum ?: 0.0)
         kontigentCell.setCellStyle(currencyStyle)
 
         row.createCell(ExcelHeader2.KontigentNavn.colIndex).setCellValue(eventorKontigentNavn)

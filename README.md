@@ -8,13 +8,16 @@ cd ~/projects/orientering/o-timing/etiming-database
 
 - Pakk ut backup-filen i `backups/`
 - Endre `$DB_NAME` i `foo.pl` (TODO gi dette scriptet et bedre navn)
+  - Nydalten2024_2024202408251925.bak (filnavn) = Nydalten2024_2024 (databasenavn)
+  - (dette scriptet brukes for å kjøre restore av en database inne i docker containeren)
 - endre i `volumes` i `docker-compose.yml` til å peke på utpakkede backup-filen som ble kopiert inn i backups
     - ```dockerfile
         volumes:
-              - ./backups/OCCløp4_2024202404232350.bak:/backup.bak:ro ```
+              - ./backups/Nydalten2024_2024202408251925.bak:/backup.bak:ro ```
       
-- start databasen vha `docker-compose up`
+- start databasen vha `docker compose up`
 - i et annet shell; kjør `./list-files-in-backup.sh` (TODO gi dette scriptet et bedre navn)
+  - (dette scriptet brukes for å trigge restore av databasen inne i docker containeren)
 - sjekk at det er mulig å connecte til databasen fra IntelliJ
 
 ## Klargjør databasen
@@ -46,6 +49,27 @@ WHERE name = 'Ledig'
 SELECT COUNT(*)
 FROM name;
 ```
+
+```sql
+-- sjekk om det finnes noen andre spor etter ledige startnummer
+SELECT *
+FROM name
+WHERE name = 'Ledig'
+   OR ename = 'Startnr'
+   OR status = 'V'
+   OR team = 'NOTEAM';
+
+SELECT *
+FROM name
+WHERE name IS NULL
+   OR ename IS NULL;
+
+DELETE
+FROM name
+WHERE name IS NULL
+   OR ename IS NULL;
+```
+
 
 ### Hvis det kun finnes ett arrangement; knytt alle løpere til dette arrangementet
 
@@ -92,7 +116,7 @@ WHERE NOT EXISTS (SELECT *
 
 ```sql
 --
-SELECT ecard, ecard2, ecard3, ecard4, team.name, status.namestr, *
+SELECT name.name, name.ename, ecard, ecard2, ecard3, ecard4, team.name, status.namestr, *
 FROM name
          LEFT JOIN team ON (name.team = team.code)
          LEFT JOIN status ON (name.status = status.code)
@@ -148,36 +172,36 @@ ved å paste rett inn i tabellen i IntelliJ
 
 ### Opprett `otiming_eventor_raw`
 
-```sql
-CREATE TABLE otiming_eventor_raw
-(
-    eventId  INT           NOT NULL
-        CONSTRAINT otiming_eventor_raw_pk PRIMARY KEY,
-    endpoint VARCHAR(100)  NOT NULL,
-    xml      NVARCHAR(MAX) NOT NULL,
-    hentet   DATETIME2     NOT NULL
-);
-```
+Det kan se ut som om dette gjøres ved å kjøre:
+com.example.otiming.CreateOtimingEventorEntryTests.createOtimingEventorRawTest
 
-### Opprett `otiming_eventor_entryfees`
+Dette gjøres ved å kjøre testen: 
+com.example.otiming.CreateOtimingEventorRawTests.createOtiminEventorRawTest
 
+### Opprett `otiming_eventor_entryfee`
+
+Jeg tror dette gjøres bved å kjøre testen:
+com.example.otiming.CreateOtimingEventorEntryfeeTests.createOtiminEventorRawTest
+
+(som betyr at sqlen under er utdatert)
 ```sql
 CREATE TABLE otiming_eventor_entryfees
 (
     entryFeeId Int, -- primary key
     eventId    Int,
     name       NVARCHAR(100),
-    amount     Int hentet DATETIME2 NOT NULL
+    amount     Int,
+    hentet DATETIME2 NOT NULL
 );
 ```
 
-### Opprett `otiming_eventor_entryfees`
+### Opprett `otiming_eventor_entries`
 
 ```sql
 CREATE TABLE otiming_eventor_entries
 (
     brikkenummer INT         NOT NULL
-        CONSTRAINT otiming_leiebrikker_pk PRIMARY KEY,
+        CONSTRAINT otiming_eventor_entries_pk PRIMARY KEY,
     eier         VARCHAR(40) NOT NULL,
     kortnavn     VARCHAR(10),
     kommentar    VARCHAR(100)
@@ -188,7 +212,7 @@ CREATE TABLE otiming_eventor_entries
 CREATE TABLE otiming_eventor_eventclasses
 (
     brikkenummer INT         NOT NULL
-        CONSTRAINT otiming_leiebrikker_pk PRIMARY KEY,
+        CONSTRAINT otiming_eventor_eventclasses_pk PRIMARY KEY,
     eier         VARCHAR(40) NOT NULL,
     kortnavn     VARCHAR(10),
     kommentar    VARCHAR(100)
@@ -202,6 +226,19 @@ Finn ut eventor sin arrangement-id (denne brukes for å få ut data fra Eventor 
 SELECT id
 FROM day;
 ```
+
+Nå er det klart for å laste ned fra eventor
+Dette gjøres vha 
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEntries
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEventclasses
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEntryfees
+
+Nå finnes all xml som trengs i databasen
+
+Det neste som må gjøres er å tolke denne xml'en
+dette gjøres vha
+
+
 
 
 TODO:
