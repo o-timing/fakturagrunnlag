@@ -7,10 +7,30 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.boot.context.properties.ConfigurationProperties
 
-@ConfigurationProperties(prefix = "o-timing.eventor")
+@ConfigurationProperties(prefix = "o-timing")
+data class OTimingConfig(
+    val eventor: EventorConfig,
+    val emit: EmitConfig
+)
+
+data class EmitConfig(
+    val database: String
+)
+
+
 data class EventorConfig(
     val apiKey: String
-)
+) {
+    fun censoredApiKey() : String {
+        if (apiKey.isBlank()) {
+            return "<empty>"
+        } else {
+            return apiKey.take(2) +
+                    "*".repeat(apiKey.length - 4) +
+                    apiKey.takeLast(2)
+        }
+    }
+}
 
 class EventorServiceImpl(val config: EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()

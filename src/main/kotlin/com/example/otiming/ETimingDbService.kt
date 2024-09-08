@@ -10,7 +10,7 @@ private val logger = KotlinLogging.logger {}
 class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
 
     fun findEventIds(): List<Int> {
-        logger.info { "getting eventId from database" }
+        logger.debug { "getting eventId from database" }
 
         val results = jdbcTemplate.query(
             """

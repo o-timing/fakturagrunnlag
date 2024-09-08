@@ -14,13 +14,13 @@ import java.sql.ResultSet
 private val logger = KotlinLogging.logger {}
 
 @SpringBootApplication
-@EnableConfigurationProperties(EventorConfig::class)
+@EnableConfigurationProperties(OTimingConfig::class)
 class OTimingApplication(
     @Autowired val jdbcTemplate: JdbcTemplate,
-    @Autowired val config: EventorConfig
+    @Autowired val config: OTimingConfig
 ) : CommandLineRunner {
 
-    val eventorService = EventorServiceImpl(config)
+    val eventorService = EventorServiceImpl(config.eventor)
     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
     // TODO:
@@ -28,6 +28,14 @@ class OTimingApplication(
     // - skriv til database
 
     override fun run(vararg args: String?) {
+        // TODO skriv ut config
+        logger.info { "Databasenavn: ${config.emit.database}" }
+        if (config.eventor.apiKey.isNullOrEmpty()) {
+            logger.error { "Eventor API-KEY is not set"}
+        } else {
+            logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
+        }
+
         val eventIds = eTimingDbService.findEventIds()
         val eventId = eventIds[0]
 
