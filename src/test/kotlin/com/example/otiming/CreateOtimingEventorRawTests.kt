@@ -11,7 +11,7 @@ class CreateOtimingEventorRawTests(
 ) {
 
     @Test
-    fun createOtiminEventorRawTest() {
+    fun createOtimingEventorRawTest() {
         // sjekk om tabellen finnes
         if (!CheckIfTableExists.finnesTabell(jdbcTemplate, "otiming_eventor_raw")) {
             // hvis den ikke finnes opprett tabellen

@@ -170,54 +170,25 @@ CREATE TABLE otiming_leiebrikker
 Populer denne tabellen med data fra `~/projects/orientering/o-timing/faktura2/src/test/resources/O-Timing Leiebrikker.csv`
 ved å paste rett inn i tabellen i IntelliJ
 
-### Opprett `otiming_eventor_raw`
+### Opprett `otiming_eventor_raw`-tabellen
 
-Det kan se ut som om dette gjøres ved å kjøre:
-com.example.otiming.CreateOtimingEventorEntryTests.createOtimingEventorRawTest
+Dette gjøres ved å kjøre testen:
+com.example.otiming.CreateOtimingEventorRawTests.createOtimingEventorRawTest
 
-Dette gjøres ved å kjøre testen: 
-com.example.otiming.CreateOtimingEventorRawTests.createOtiminEventorRawTest
+### Opprett `otiming_eventor_entry`-tabellene
 
-### Opprett `otiming_eventor_entryfee`
+Dette gjøres ved å kjøre testen:
+com.example.otiming.CreateOtimingEventorEntryTests.createOtimingEventorEntryTest
 
-Jeg tror dette gjøres bved å kjøre testen:
-com.example.otiming.CreateOtimingEventorEntryfeeTests.createOtiminEventorRawTest
+### Opprett `otiming_eventor_entryfee`-tabellene
 
-(som betyr at sqlen under er utdatert)
-```sql
-CREATE TABLE otiming_eventor_entryfees
-(
-    entryFeeId Int, -- primary key
-    eventId    Int,
-    name       NVARCHAR(100),
-    amount     Int,
-    hentet DATETIME2 NOT NULL
-);
-```
+Dette gjøres ved å kjøre testen:
+com.example.otiming.CreateOtimingEventorEntryFeeTests.createOtimingEventorEntryFeeTest
 
-### Opprett `otiming_eventor_entries`
+### Opprett `otiming_eventor_eventclass`-tabellene
 
-```sql
-CREATE TABLE otiming_eventor_entries
-(
-    brikkenummer INT         NOT NULL
-        CONSTRAINT otiming_eventor_entries_pk PRIMARY KEY,
-    eier         VARCHAR(40) NOT NULL,
-    kortnavn     VARCHAR(10),
-    kommentar    VARCHAR(100)
-);
-```
-
-```sql
-CREATE TABLE otiming_eventor_eventclasses
-(
-    brikkenummer INT         NOT NULL
-        CONSTRAINT otiming_eventor_eventclasses_pk PRIMARY KEY,
-    eier         VARCHAR(40) NOT NULL,
-    kortnavn     VARCHAR(10),
-    kommentar    VARCHAR(100)
-);
-```
+Dette gjøres ved å kjøre testen:
+com.example.otiming.CreateOtimingEventorEventclassTests.createOtimingEventorEntryFeeTest
 
 ## Last ned data fra eventor
 
@@ -226,6 +197,11 @@ Finn ut eventor sin arrangement-id (denne brukes for å få ut data fra Eventor 
 SELECT id
 FROM day;
 ```
+
+Denne id'en legges inn i:
+com.example.otiming.PopulateEventorTablesTests.getEventId
+
+
 
 Nå er det klart for å laste ned fra eventor
 Dette gjøres vha 
@@ -238,7 +214,15 @@ Nå finnes all xml som trengs i databasen
 Det neste som må gjøres er å tolke denne xml'en
 dette gjøres vha
 
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntry
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEventclasses
+com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntryfees
 
+Bytt ut leiebrikkepris her:
+com.example.otiming.OtimingFakturaRapportTests.LEIEBRIKKE_LEIE
+
+For å lage rapport:
+com.example.otiming.OtimingFakturaRapportTests.fakturagrunnlag_excel
 
 
 TODO:

@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
 
 @SpringBootTest
-class CreateOtimingEventorEntryfeeTests(
+class CreateOtimingEventorEntryFeeTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
 ) {
 
