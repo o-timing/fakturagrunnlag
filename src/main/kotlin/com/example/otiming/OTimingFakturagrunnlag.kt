@@ -12,7 +12,7 @@ private val logger = KotlinLogging.logger {}
 
 @SpringBootApplication
 @EnableConfigurationProperties(OTimingConfig::class)
-class OTimingApplication(
+class OTimingFakturagrunnlag(
     @Autowired val jdbcTemplate: JdbcTemplate,
     @Autowired val config: OTimingConfig
 ) : CommandLineRunner {
@@ -33,6 +33,8 @@ class OTimingApplication(
             logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
         }
 
+
+
         val eventIds = eTimingDbService.findEventIds()
         val eventId = eventIds[0]
 
@@ -52,5 +54,5 @@ class OTimingApplication(
 
 
 fun main(args: Array<String>) {
-    runApplication<OTimingApplication>(*args)
+    runApplication<OTimingFakturagrunnlag>(*args)
 }
