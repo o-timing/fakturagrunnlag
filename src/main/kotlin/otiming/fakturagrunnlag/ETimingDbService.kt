@@ -10,8 +10,6 @@ private val logger = KotlinLogging.logger {}
 class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
 
     fun findEventIds(): List<Int> {
-        logger.debug { "getting eventId from database" }
-
         val results = jdbcTemplate.query(
             """
                 select id
@@ -20,9 +18,6 @@ class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
         ) { resultSet: ResultSet, _: Int ->
             resultSet.getInt("id")
         }
-
-        logger.info { "Got eventIds from database: ${results.joinToString(", ")}" }
-
         return results.toImmutableList()
     }
 

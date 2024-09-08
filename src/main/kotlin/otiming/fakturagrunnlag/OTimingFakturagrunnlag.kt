@@ -39,7 +39,11 @@ class OTimingFakturagrunnlag(
         dbMigrations.migrate()
 
         val eventIds = eTimingDbService.findEventIds()
+        if (eventIds.isEmpty()) logger.error { "Fant ingen eventId i databasen" }
+        else if (eventIds.size > 1) logger.error { "Fant mer enn en eventId i databasen: $eventIds"}
+
         val eventId = eventIds[0]
+        logger.info { "eventId fra databasen: $eventId" }
 
 //        val entries = eventorService.getEntries(eventId)
 //        logger.info { entries }
