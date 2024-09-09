@@ -154,41 +154,19 @@ WHERE ename LIKE '%Ukjent%';
 
 ## Opprett `otiming`-tabeller
 
-### Opprett `otiming_leiebrikker`-tabellen
-
-```sql
-CREATE TABLE otiming_leiebrikker
-(
-    brikkenummer INT         NOT NULL
-        CONSTRAINT otiming_leiebrikker_pk PRIMARY KEY,
-    eier         VARCHAR(40) NOT NULL,
-    kortnavn     VARCHAR(10),
-    kommentar    VARCHAR(100)
-);
+```
+mise run migrate-db
 ```
 
-Populer denne tabellen med data fra `~/projects/orientering/o-timing/faktura2/src/test/resources/O-Timing Leiebrikker.csv`
+eller 
+
+```
+mvn spring-boot:run \
+    -Dspring-boot.run.main-class=otiming.fakturagrunnlag.db.DbMigrationsAppKt
+```
+
+Populer `otiming_leiebrikker` med data fra `~/projects/orientering/o-timing/faktura2/src/test/resources/O-Timing Leiebrikker.csv`
 ved å paste rett inn i tabellen i IntelliJ
-
-### Opprett `otiming_eventor_raw`-tabellen
-
-Dette gjøres ved å kjøre testen:
-com.example.otiming.CreateOtimingEventorRawTests.createOtimingEventorRawTest
-
-### Opprett `otiming_eventor_entry`-tabellene
-
-Dette gjøres ved å kjøre testen:
-com.example.otiming.CreateOtimingEventorEntryTests.createOtimingEventorEntryTest
-
-### Opprett `otiming_eventor_entryfee`-tabellene
-
-Dette gjøres ved å kjøre testen:
-com.example.otiming.CreateOtimingEventorEntryFeeTests.createOtimingEventorEntryFeeTest
-
-### Opprett `otiming_eventor_eventclass`-tabellene
-
-Dette gjøres ved å kjøre testen:
-com.example.otiming.CreateOtimingEventorEventclassTests.createOtimingEventorEntryFeeTest
 
 ## Last ned data fra eventor
 
