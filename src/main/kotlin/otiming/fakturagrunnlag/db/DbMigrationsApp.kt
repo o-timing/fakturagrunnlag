@@ -13,7 +13,7 @@ private val logger = KotlinLogging.logger {}
 
 @SpringBootApplication
 @EnableConfigurationProperties(OTimingConfig::class)
-class MigrateDb(
+class DbMigrationsApp(
     @Autowired val jdbcTemplate: JdbcTemplate,
     @Autowired val config: OTimingConfig
 ) : CommandLineRunner {
@@ -29,6 +29,6 @@ class MigrateDb(
 }
 
 fun main(args: Array<String>) {
-    runApplication<MigrateDb>(*args)
+    runApplication<DbMigrationsApp>(*args)
 }
 
