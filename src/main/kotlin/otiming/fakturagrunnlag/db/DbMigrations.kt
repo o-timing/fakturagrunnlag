@@ -13,6 +13,7 @@ class DbMigrations(val jdbcTemplate: JdbcTemplate) {
         createOtimingEventorEntryTables()
         createOtimingEventorEventclassTables()
         createOtimingEventorEntryfeeTable()
+        createOtimingLeiebrikkerTable()
     }
 
     /**
@@ -36,6 +37,14 @@ class DbMigrations(val jdbcTemplate: JdbcTemplate) {
         }
     }
 
+    /**
+     * oppretter
+     * - otiming_eventor_entry,
+     * - otiming_eventor_entry_entryfee,
+     * - otiming_eventor_entry_ccard og
+     * - otiming_eventor_entry_eventclass
+     * hvis de ikke finnes fra før
+     */
     fun createOtimingEventorEntryTables() {
         createTableIfNotExists("otiming_eventor_entry") {
             jdbcTemplate.execute(
@@ -89,6 +98,11 @@ class DbMigrations(val jdbcTemplate: JdbcTemplate) {
         }
     }
 
+    /** oppretter
+     * - otiming_eventor_eventclass
+     * - otiming_eventor_eventclass_entryfee
+     * hvis de ikke finnes fra før
+     */
     fun createOtimingEventorEventclassTables() {
         createTableIfNotExists("otiming_eventor_eventclass") {
             jdbcTemplate.execute(
@@ -121,6 +135,11 @@ class DbMigrations(val jdbcTemplate: JdbcTemplate) {
         }
     }
 
+    /**
+     * oppretter
+     * - otiming_eventor_entryfee
+     * hvis den ikke finnes fra før
+     */
     fun createOtimingEventorEntryfeeTable() {
         createTableIfNotExists("otiming_eventor_entryfee") {
             jdbcTemplate.execute(
@@ -137,6 +156,32 @@ class DbMigrations(val jdbcTemplate: JdbcTemplate) {
         }
     }
 
+    /**
+     * oppretter
+     * - otiming_leiebrikker
+     * om den ikke finnes fra før
+     */
+    fun createOtimingLeiebrikkerTable() {
+        createTableIfNotExists("otiming_leiebrikker") {
+            jdbcTemplate.execute(
+                """
+                CREATE TABLE otiming_leiebrikker
+                (
+                    brikkenummer INT         NOT NULL
+                        CONSTRAINT otiming_leiebrikker_pk PRIMARY KEY,
+                    eier         VARCHAR(40) NOT NULL,
+                    kortnavn     VARCHAR(10),
+                    kommentar    VARCHAR(100)
+                );
+                """.trimIndent()
+            )
+        }
+    }
+
+    /**
+     * sjekker om en navngitt tabell finnes
+     * og kjører action hvis den ikke finnes
+     */
     private fun createTableIfNotExists(tableName: String, action: () -> Unit) {
         if (CheckIfTableExists.finnesTabell(jdbcTemplate, tableName)) {
             logger.info { "$tableName finnes fra før" }
