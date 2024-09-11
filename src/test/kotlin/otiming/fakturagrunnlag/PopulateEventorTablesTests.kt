@@ -22,60 +22,6 @@ class PopulateEventorTablesTests(
     val eventId: EventId = EventId(19104)
 
     @Test
-    fun populateOtimingEventorRawWithEntries() {
-        val eventorService = EventorServiceImpl(config)
-
-        val xmlString: String? = eventorService.getEntriesRaw(eventId)
-
-        xmlString?.let {
-            OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
-                jdbcTemplate = jdbcTemplate,
-                eventId = eventId,
-                xmlString = it,
-                // TODO gjør dette om til en enum
-                endpoint = "entries",
-                endret = LocalDateTime.now()
-            )
-        }
-    }
-
-    @Test
-    fun populateOtimingEventorRawWithEventclasses() {
-        val eventorService = EventorServiceImpl(config)
-
-        val xmlString: String? = eventorService.getEventClassesRaw(eventId)
-
-        xmlString?.let {
-            OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
-                jdbcTemplate = jdbcTemplate,
-                eventId = eventId,
-                xmlString = it,
-                // TODO gjør dette om til en enum
-                endpoint = "eventclasses",
-                endret = LocalDateTime.now()
-            )
-        }
-    }
-
-    @Test
-    fun populateOtimingEventorRawWithEntryfees() {
-        val eventorService = EventorServiceImpl(config)
-
-        val xmlString: String? = eventorService.getEntryFeesRaw(eventId)
-
-        xmlString?.let {
-            OtimingEventorDbRepo.insertIntoOtimingEventorRaw(
-                jdbcTemplate = jdbcTemplate,
-                eventId = eventId,
-                xmlString = it,
-                // TODO gjør dette om til en enum
-                endpoint = "entryfees",
-                endret = LocalDateTime.now()
-            )
-        }
-    }
-
-    @Test
     fun populateOtimingEventorEntry() {
         // les entryfees fra raw tabellen
         val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "entries")

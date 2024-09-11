@@ -3,9 +3,12 @@ package otiming.fakturagrunnlag
 import generated.EntryFeeList
 import generated.EntryList
 import generated.EventClassList
+import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.boot.context.properties.ConfigurationProperties
+
+private val logger = KotlinLogging.logger {}
 
 class EventorServiceImpl(val config: otiming.fakturagrunnlag.EventorConfig) : AbstractEventorService() {
     val client = OkHttpClient()
@@ -35,6 +38,7 @@ class EventorServiceImpl(val config: otiming.fakturagrunnlag.EventorConfig) : Ab
     }
 
     private fun fetchStringFromEventorEndpoint(url: String): String? {
+        logger.info { "henter data fra: $url" }
         val request = Request.Builder()
             .url(url)
             .addHeader("ApiKey", config.apiKey)

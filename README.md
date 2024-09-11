@@ -179,13 +179,11 @@ FROM day;
 Denne id'en legges inn i:
 com.example.otiming.PopulateEventorTablesTests.getEventId
 
-
-
 Nå er det klart for å laste ned fra eventor
 Dette gjøres vha 
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEntries
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEventclasses
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorRawWithEntryfees
+```
+mise run fetch-data-from-eventor 
+```
 
 Nå finnes all xml som trengs i databasen
 
@@ -203,14 +201,8 @@ For å lage rapport:
 com.example.otiming.OtimingFakturaRapportTests.fakturagrunnlag_excel
 
 
-TODO:
 
-- renskrive dokumentasjon til markdown
-- eksempel på excel-ark:
-    - https://docs.google.com/spreadsheets/d/1HS-Qj4o8iDZNx9pMIDrYx4tttK3JSmfa8jO4oSX23pc/edit#gid=481689688
-- Dokumenter fra start
-
-
+### Løse notater:
 
 Hvordan kobler man personer i eventor og personer i etiming?
 
