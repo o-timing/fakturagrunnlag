@@ -60,13 +60,13 @@ class OtimingFakturaRapport(val jdbcTemplate: JdbcTemplate) {
         ) { rs, _ ->
             OtimingDomain.LeiebrikkeRapportLinje(
                 id = rs.getInt("id"),
-                rs.getInt("ecard"),
-                rs.getInt("ecard2"),
-                rs.getInt("etiming_ecard"),
-                rs.getBoolean("etiming_ecardfee"),
-                rs.getInt("leiebrikke_nummer"),
-                rs.getString("leiebrikke_eier"),
-                rs.getString("leiebrikke_kortnavn")
+                ecard1 = rs.getInt("ecard"),
+                ecard2 = rs.getInt("ecard2"),
+                etimingEcard = rs.getInt("etiming_ecard"),
+                etimingEcardFee = rs.getBoolean("etiming_ecardfee"),
+                leiebrikke_nummer = rs.getInt("leiebrikke_nummer"),
+                leiebrikke_eier = rs.getString("leiebrikke_eier"),
+                leiebrikke_kortnavn = rs.getString("leiebrikke_kortnavn")
             )
         }.groupBy { it.id }.mapValues { entry ->
             entry.value.first()

@@ -3,16 +3,23 @@ package otiming.fakturagrunnlag.excel
 import org.apache.poi.hssf.usermodel.HSSFDataFormat
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.util.CellRangeAddress
+import org.apache.poi.xssf.usermodel.XSSFCellStyle
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFRow
+import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import otiming.fakturagrunnlag.OtimingDomain.BasisRapportLinje
 import otiming.fakturagrunnlag.OtimingDomain.KontigentRapportLinje
 import otiming.fakturagrunnlag.OtimingDomain.LeiebrikkeRapportLinje
 import otiming.fakturagrunnlag.OtimingFakturaRapport
+import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRepository
+import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRow
 import java.io.File
 
-class ExcelReport(val otimingFakturaRapport: OtimingFakturaRapport) {
+class ExcelReport(
+    val otimingFakturaRapport: OtimingFakturaRapport,
+    val leiebrikkeRepository: LeiebrikkeRepository
+) {
     val LEIEBRIKKE_LEIE: Int = 50
 
     fun fakturagrunnlagExcel(databasenavn: String) {
@@ -57,9 +64,9 @@ class ExcelReport(val otimingFakturaRapport: OtimingFakturaRapport) {
         }
     }
 
-    private fun createFakturaWorkbook(input: List<Fakturarapportlinje>): XSSFWorkbook {
+
+    private fun createFakturaWorkbook(fakturarapportlinjer: List<Fakturarapportlinje>): XSSFWorkbook {
         val workbook = XSSFWorkbook()
-        val workSheet = workbook.createSheet()
 
         val currencyStyle = workbook.createCellStyle()
         currencyStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"))
@@ -70,8 +77,47 @@ class ExcelReport(val otimingFakturaRapport: OtimingFakturaRapport) {
         val formulaEvaluator: XSSFFormulaEvaluator =
             workbook.getCreationHelper().createFormulaEvaluator()
 
-        val headerRow = workSheet.createRow(0)
-        ExcelHeader2.entries.forEach {
+        createOppsummeringSheet(workbook, fakturarapportlinjer, currencyStyle, dateStyle, formulaEvaluator)
+
+        createLeiebrikkerSheet(workbook)
+
+        return workbook
+    }
+
+    private fun createLeiebrikkerSheet(workbook: XSSFWorkbook) {
+        val leiebrikker: List<LeiebrikkeRow> = leiebrikkeRepository.getLeiebrikker()
+
+        val leiebrikkeSheet: XSSFSheet = workbook.createSheet("Leiebrikker")
+
+        var rownum = 0
+        val row: XSSFRow = leiebrikkeSheet.createRow(rownum++)
+
+        row.createCell(0).setCellValue("Leiebrikke avgift")
+        leiebrikkeSheet.autoSizeColumn(0)
+        row.createCell(1).setCellValue(LEIEBRIKKE_LEIE.toDouble())
+
+//        leiebrikkeSheet.createFreezePane(0, 1)
+//
+//        leiebrikkeSheet.setAutoFilter(
+//            CellRangeAddress(
+//                /* firstRow = */ 0,
+//                /* lastRow = */ leiebrikker.size,
+//                /* firstCol = */ 0,
+//                /* lastCol = */ LeiebrikkeSheetHeader.entries.map { it.colIndex }.max()
+//            )
+//        )
+    }
+
+    private fun createOppsummeringSheet(
+        workbook: XSSFWorkbook,
+        fakturarapportlinjer: List<Fakturarapportlinje>,
+        currencyStyle: XSSFCellStyle,
+        dateStyle: XSSFCellStyle,
+        formulaEvaluator: XSSFFormulaEvaluator
+    ) {
+        val oppsummeringSheet = workbook.createSheet("Oppsummering")
+        val headerRow = oppsummeringSheet.createRow(0)
+        OppsummeringSheetHeader.entries.forEach {
             val cell =
                 headerRow
                     .createCell(it.colIndex)
@@ -79,24 +125,26 @@ class ExcelReport(val otimingFakturaRapport: OtimingFakturaRapport) {
         }
 
         var rownum = 0
-        input.forEach {
+        fakturarapportlinjer.forEach {
             rownum++
-            val row: XSSFRow = workSheet.createRow(rownum)
+            val row: XSSFRow = oppsummeringSheet.createRow(rownum)
             it.insertIntoRow(row, currencyStyle, dateStyle, formulaEvaluator, LEIEBRIKKE_LEIE)
         }
 
-        workSheet.createFreezePane(0, 1)
+        oppsummeringSheet.createFreezePane(0, 1)
 
-        workSheet.setAutoFilter(
+        oppsummeringSheet.setAutoFilter(
             CellRangeAddress(
                 /* firstRow = */ 0,
-                /* lastRow = */ input.size,
+                /* lastRow = */ fakturarapportlinjer.size,
                 /* firstCol = */ 0,
-                /* lastCol = */ ExcelHeader2.entries.map { it.colIndex }.max()
+                /* lastCol = */ OppsummeringSheetHeader.entries.map { it.colIndex }.max()
             )
         )
 
-        return workbook
+        OppsummeringSheetHeader.entries.forEach {
+            oppsummeringSheet.autoSizeColumn(it.colIndex)
+        }
     }
 
 
@@ -142,49 +190,49 @@ data class Fakturarapportlinje(
         formulaEvaluator: XSSFFormulaEvaluator,
         leiebrikkeLeie: Int
     ): XSSFRow {
-        row.createCell(ExcelHeader2.Klubb.colIndex).setCellValue(klubb)
-        row.createCell(ExcelHeader2.Distanse.colIndex).setCellValue(distanse)
-        val datoCell = row.createCell(ExcelHeader2.Dato.colIndex)
+        row.createCell(OppsummeringSheetHeader.Klubb.colIndex).setCellValue(klubb)
+        row.createCell(OppsummeringSheetHeader.Distanse.colIndex).setCellValue(distanse)
+        val datoCell = row.createCell(OppsummeringSheetHeader.Dato.colIndex)
         datoCell.setCellValue(dato)
         datoCell.setCellStyle(dateStyle)
         startnr?.let {
-            row.createCell(ExcelHeader2.Startnr.colIndex).setCellValue(it)
+            row.createCell(OppsummeringSheetHeader.Startnr.colIndex).setCellValue(it)
         }
-        row.createCell(ExcelHeader2.Fornavn.colIndex).setCellValue(fornavn)
-        row.createCell(ExcelHeader2.Etternavn.colIndex).setCellValue(etternavn)
-        row.createCell(ExcelHeader2.Navn.colIndex).setCellValue(navn)
-        row.createCell(ExcelHeader2.Klasse.colIndex).setCellValue(klasse)
+        row.createCell(OppsummeringSheetHeader.Fornavn.colIndex).setCellValue(fornavn)
+        row.createCell(OppsummeringSheetHeader.Etternavn.colIndex).setCellValue(etternavn)
+        row.createCell(OppsummeringSheetHeader.Navn.colIndex).setCellValue(navn)
+        row.createCell(OppsummeringSheetHeader.Klasse.colIndex).setCellValue(klasse)
 
         brikkenummer?.let {
-            row.createCell(ExcelHeader2.Brikkenummer.colIndex).setCellValue(brikkenummer.toDouble())
+            row.createCell(OppsummeringSheetHeader.Brikkenummer.colIndex).setCellValue(brikkenummer.toDouble())
         }
 
-        val leiebrikkeCell = row.createCell(ExcelHeader2.Leiebrikke.colIndex)
+        val leiebrikkeCell = row.createCell(OppsummeringSheetHeader.Leiebrikke.colIndex)
         leiebrikkeCell.setCellStyle(currencyStyle)
         if (utledetLeiebrikke) leiebrikkeCell.setCellValue(leiebrikkeLeie.toDouble())
 
-        val kontigentCell = row.createCell(ExcelHeader2.Kontigent.colIndex)
+        val kontigentCell = row.createCell(OppsummeringSheetHeader.Kontigent.colIndex)
         kontigentCell.setCellValue(eventorKontigentSum ?: 0.0)
         kontigentCell.setCellStyle(currencyStyle)
 
-        row.createCell(ExcelHeader2.KontigentNavn.colIndex).setCellValue(eventorKontigentNavn)
+        row.createCell(OppsummeringSheetHeader.KontigentNavn.colIndex).setCellValue(eventorKontigentNavn)
 
-        row.sheet.setColumnHidden(ExcelHeader2.KontigentNavn.colIndex, true)
+        row.sheet.setColumnHidden(OppsummeringSheetHeader.KontigentNavn.colIndex, true)
 
-        val totalCell = row.createCell(ExcelHeader2.Total.colIndex)
+        val totalCell = row.createCell(OppsummeringSheetHeader.Total.colIndex)
         totalCell.setCellStyle(currencyStyle)
         val formula =
-            "SUM(${ExcelHeader2.Leiebrikke.colName}${row.rowNum + 1}:${ExcelHeader2.Kontigent.colName}${row.rowNum + 1})"
+            "SUM(${OppsummeringSheetHeader.Leiebrikke.colName}${row.rowNum + 1}:${OppsummeringSheetHeader.Kontigent.colName}${row.rowNum + 1})"
         totalCell.setCellFormula(formula)
         formulaEvaluator.evaluateFormulaCell(totalCell)
 
-        row.createCell(ExcelHeader2.Kommentar.colIndex)
+        row.createCell(OppsummeringSheetHeader.Kommentar.colIndex)
 
         return row
     }
 }
 
-enum class ExcelHeader2(val colIndex: Int) {
+enum class OppsummeringSheetHeader(val colIndex: Int) {
     Klubb(0),
     Distanse(1),
     Dato(2),

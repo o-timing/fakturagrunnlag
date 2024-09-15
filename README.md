@@ -188,12 +188,19 @@ mise run fakturagrunnlag "generate-excel-report"
 ```
 
 ## TODO
-- ta med leiebrikkepris i excelarket og bruk den i formel slik at den kan endres i excel-arket
+- fikse bug som gjør at noen dukker opp med 0 i kontigent
+  - flytte det som idag er en test til vanlig kode
+  - enkel måte å dumpe data ut i excel-arket
+    - leiebrikker
+    - variabler 
+      - leiebrikke avgift
+    - kontigenter
+    - klasser
 - ta med alle kontigentene i excel-arket og bruk dem i en formel slik at det er mulig å endre dem i excel-arket
 - ta med knytningen mellom kontigent og klasse og bruk det som en formel slik at det er mulig å endre dem i excel-arket
 - mise target for å starte database
 - se på spring shell
-- script manuell sql
+- script for å kjøre det som idag er manuell sql
 
 
 ### Løse notater:

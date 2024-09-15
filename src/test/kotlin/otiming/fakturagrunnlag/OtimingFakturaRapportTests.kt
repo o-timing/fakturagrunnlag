@@ -46,7 +46,11 @@ class OtimingFakturaRapportTests(
     fun fakturarapport() {
         val fakturarapportlinjer = createFakturarapportlinjer()
 
-        fakturarapportlinjer.forEach { println(it) }
+        fakturarapportlinjer.forEach {
+            if (it.eventorKontigentNavn == null) {
+                println(it)
+            }
+        }
     }
 
     @Test

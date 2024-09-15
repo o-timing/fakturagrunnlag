@@ -11,6 +11,7 @@ import otiming.fakturagrunnlag.db.DbMigrations
 import otiming.fakturagrunnlag.eventor.FetchEventorData
 import otiming.fakturagrunnlag.eventor.PopulateEventorTables
 import otiming.fakturagrunnlag.excel.ExcelReport
+import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRepository
 import otiming.fakturagrunnlag.leiebrikke.ReadLeiebrikkerCsv
 import kotlin.system.exitProcess
 
@@ -85,8 +86,9 @@ class OTimingFakturagrunnlag(
                     logger.info { "Databasenavn: ${config.emit.databasenavn}" }
 
                     val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
+                    val leiebrikkeRepository = LeiebrikkeRepository(jdbcTemplate)
 
-                    ExcelReport(otimingFakturaRapport).fakturagrunnlagExcel(config.emit.databasenavn)
+                    ExcelReport(otimingFakturaRapport, leiebrikkeRepository).fakturagrunnlagExcel(config.emit.databasenavn)
                 }
             }
         }
