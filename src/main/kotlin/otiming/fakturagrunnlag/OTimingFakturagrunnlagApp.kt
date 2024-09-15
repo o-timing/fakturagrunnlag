@@ -8,7 +8,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
 import otiming.fakturagrunnlag.db.DbMigrations
-import otiming.fakturagrunnlag.eventor.FetchEventorDataApp
+import otiming.fakturagrunnlag.eventor.FetchEventorData
+import otiming.fakturagrunnlag.eventor.PopulateEventorTables
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -46,8 +47,19 @@ class OTimingFakturagrunnlag(
                         logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
                     }
 
+                    val eventorService = EventorServiceImpl(config.eventor)
+                    val eTimingDbService = ETimingDbService(jdbcTemplate)
 
-                    FetchEventorDataApp(jdbcTemplate, config).fetchData(args.drop(1))
+                    FetchEventorData(jdbcTemplate, eventorService, eTimingDbService).fetchData()
+                }
+
+                "populate-eventor-tables" -> {
+                    logger.info { "Populer Eventor-tabeller" }
+                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+
+                    val eTimingDbService = ETimingDbService(jdbcTemplate)
+
+                    PopulateEventorTables(jdbcTemplate, eTimingDbService).parse()
                 }
             }
         }

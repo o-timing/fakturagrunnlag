@@ -173,13 +173,6 @@ Dette gjøres vha
 mise run fakturagrunnlag "fetch-data-from-eventor"
 ```
 
-Hvis det finnes mer enn en EventID i databasen kan den spesifiseres slik som under 
-(men dette byr nok på andre problemer senere) 
-
-```
-mise run fakturagrunnlag "fetch-data-from-eventor 19104"
-```
-
 Nå finnes all xml som trengs i databasen
 
 Det neste som må gjøres er å tolke denne xml'en

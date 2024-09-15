@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# mise description=""
-
-mvn spring-boot:run \
-    -Dspring-boot.run.main-class=otiming.fakturagrunnlag.eventor.FetchEventorDataAppKt \
-    -Dspring-boot.run.arguments=$1

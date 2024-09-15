@@ -4,10 +4,29 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import okhttp3.internal.toImmutableList
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.ResultSet
+import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
 class ETimingDbService(val jdbcTemplate: JdbcTemplate) {
+
+    fun findEventId(): EventId {
+        val eventIds: List<Int> = findEventIds()
+
+        if (eventIds.isEmpty()) {
+            logger.error { "Fant ingen eventId i databasen" }
+            exitProcess(1)
+        } else if (eventIds.size > 1) {
+            logger.error { "Kun databaser med en eventId er støttet. Fant: ${eventIds.joinToString(separator =", ")}" }
+            exitProcess(1)
+        }
+
+
+        val eventId = eventIds[0].toInt()
+        logger.info { "eventId fra databasen: $eventId" }
+        return EventId(eventId)
+    }
+
 
     fun findEventIds(): List<Int> {
         val results = jdbcTemplate.query(

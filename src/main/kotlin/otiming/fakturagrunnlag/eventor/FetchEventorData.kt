@@ -5,28 +5,21 @@ import org.springframework.jdbc.core.JdbcTemplate
 import otiming.fakturagrunnlag.ETimingDbService
 import otiming.fakturagrunnlag.EventId
 import otiming.fakturagrunnlag.EventorServiceImpl
-import otiming.fakturagrunnlag.OTimingConfig
 import otiming.fakturagrunnlag.OtimingEventorDbRepo
 import java.time.LocalDateTime
-import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
-class FetchEventorDataApp(
+class FetchEventorData(
+    // TODO bli kvitt avhengigheten til jdbcTemplate
     val jdbcTemplate: JdbcTemplate,
-    val config: OTimingConfig
+    // TODO bruk AbstractEventorService istedet
+    val eventorService: EventorServiceImpl,
+    val eTimingDbService: ETimingDbService,
 ) {
 
-    val eventorService = EventorServiceImpl(config.eventor)
-    val eTimingDbService = ETimingDbService(jdbcTemplate)
-
-    fun fetchData(args: List<String?>) {
-        val eventId: EventId = findEventId(
-            when (args.size) {
-                1 -> args[0]
-                else -> null
-            }
-        )
+    fun fetchData() {
+        val eventId: EventId = eTimingDbService.findEventId()
 
         logger.info { "Henter data fra eventor" }
         logger.info { "entries" }
@@ -85,30 +78,4 @@ class FetchEventorDataApp(
             )
         }
     }
-
-
-    fun findEventId(eventIdFromArg: String?): EventId {
-        if (eventIdFromArg != null) {
-            logger.error { "eventIdFromArg: '" + eventIdFromArg + "'" }
-            val eventId = eventIdFromArg.toInt()
-            logger.info("Bruker eventId fra argument: $eventId")
-            return EventId(eventId)
-        } else {
-            val eventIds: List<Int> = eTimingDbService.findEventIds()
-
-            if (eventIds.isEmpty()) {
-                logger.error { "Fant ingen eventId i databasen" }
-                exitProcess(1)
-            } else if (eventIds.size > 1) {
-                logger.error { "Fant mer enn en eventId i databasen: $eventIds" }
-                exitProcess(1)
-            }
-
-
-            val eventId = eventIds[0].toInt()
-            logger.info { "eventId fra databasen: $eventId" }
-            return EventId(eventId)
-        }
-    }
-
 }

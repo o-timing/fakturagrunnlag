@@ -1,27 +1,39 @@
-package otiming.fakturagrunnlag
+package otiming.fakturagrunnlag.eventor
 
 import generated.EntryFee
 import generated.EntryFeeList
 import generated.EntryList
 import generated.EventClass
 import generated.EventClassList
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.xml.bind.JAXBContext
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
+import otiming.fakturagrunnlag.ETimingDbService
+import otiming.fakturagrunnlag.EntryFeeId
+import otiming.fakturagrunnlag.EntryId
+import otiming.fakturagrunnlag.EventClassId
+import otiming.fakturagrunnlag.EventId
+import otiming.fakturagrunnlag.PersonId
+import otiming.fakturagrunnlag.toInternalId
 import java.io.StringReader
 import java.time.LocalDateTime
 
-@SpringBootTest
-class PopulateEventorTablesTests(
-    @Autowired val jdbcTemplate: JdbcTemplate,
+private val logger = KotlinLogging.logger {}
+
+class PopulateEventorTables(
+    val jdbcTemplate: JdbcTemplate,
+    val eTimingDbService: ETimingDbService
 ) {
 
-    val eventId: EventId = EventId(19104)
+    fun parse() {
+        val eventId: EventId = eTimingDbService.findEventId()
 
-    @Test
-    fun populateOtimingEventorEntry() {
+        populateOtimingEventorEntry(eventId)
+        populateOtimingEventorEventclasses(eventId)
+        populateOtimingEventorEntryfees(eventId)
+    }
+
+    fun populateOtimingEventorEntry(eventId: EventId) {
         // les entryfees fra raw tabellen
         val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "entries")
 
@@ -105,8 +117,7 @@ class PopulateEventorTablesTests(
         )
     }
 
-    @Test
-    fun populateOtimingEventorEventclasses() {
+    fun populateOtimingEventorEventclasses(eventId: EventId) {
         // les entryfees fra raw tabellen
         val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "eventclasses")
 
@@ -157,8 +168,7 @@ class PopulateEventorTablesTests(
     }
 
 
-    @Test
-    fun populateOtimingEventorEntryfees() {
+    fun populateOtimingEventorEntryfees(eventId: EventId) {
         // les entryfees fra raw tabellen
         val rawRow: OtimingEventorRawRow? = lesFraOtimingEventorRaw(eventId, "entryfees")
 
@@ -219,5 +229,5 @@ class PopulateEventorTablesTests(
         val endret: LocalDateTime,
         val xmlString: String,
     )
-}
 
+}
