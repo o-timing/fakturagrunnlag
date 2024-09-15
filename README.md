@@ -173,22 +173,35 @@ Dette gjøres vha
 mise run fakturagrunnlag "fetch-data-from-eventor"
 ```
 
+## Populer eventor-tabeller
+
 Nå finnes all xml som trengs i databasen
 
 Det neste som må gjøres er å tolke denne xml'en
 dette gjøres vha å kjøre testene:
 
-- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntry
-- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEventclasses
-- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntryfees
+```
+mise run fakturagrunnlag "populate-eventor-tables"
+```
 
 Bytt ut leiebrikkepris her:
 com.example.otiming.OtimingFakturaRapportTests.LEIEBRIKKE_LEIE
 
 ## Lage excel rapport
 kjør testen:
-- com.example.otiming.OtimingFakturaRapportTests.fakturagrunnlag_excel
 
+```
+mise run fakturagrunnlag "generate-excel-report"
+```
+
+## TODO
+- gjør det mulig å lese inn leiebrikker fra csv vha mise
+- ta med leiebrikkepris i excelarket og bruk den i formel slik at den kan endres i excel-arket
+- ta med alle kontigentene i excel-arket og bruk dem i en formel slik at det er mulig å endre dem i excel-arket
+- ta med knytningen mellom kontigent og klasse og bruk det som en formel slik at det er mulig å endre dem i excel-arket
+- mise target for å starte database
+- se på spring shell
+- script manuell sql
 
 
 ### Løse notater:

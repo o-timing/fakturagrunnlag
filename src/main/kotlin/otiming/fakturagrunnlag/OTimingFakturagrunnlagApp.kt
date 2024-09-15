@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import otiming.fakturagrunnlag.db.DbMigrations
 import otiming.fakturagrunnlag.eventor.FetchEventorData
 import otiming.fakturagrunnlag.eventor.PopulateEventorTables
+import otiming.fakturagrunnlag.excel.ExcelReport
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -60,6 +61,15 @@ class OTimingFakturagrunnlag(
                     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
                     PopulateEventorTables(jdbcTemplate, eTimingDbService).parse()
+                }
+
+                "generate-excel-report" -> {
+                    logger.info { "Generer Excel-rapport" }
+                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+
+                    val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
+
+                    ExcelReport(otimingFakturaRapport).fakturagrunnlagExcel(config.emit.databasenavn)
                 }
             }
         }

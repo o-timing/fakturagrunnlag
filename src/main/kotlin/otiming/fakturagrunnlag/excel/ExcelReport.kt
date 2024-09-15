@@ -1,61 +1,60 @@
-package otiming.fakturagrunnlag
+package otiming.fakturagrunnlag.excel
 
-import otiming.fakturagrunnlag.OtimingDomain.BasisRapportLinje
-import otiming.fakturagrunnlag.OtimingDomain.KontigentRapportLinje
-import otiming.fakturagrunnlag.OtimingDomain.LeiebrikkeRapportLinje
 import org.apache.poi.hssf.usermodel.HSSFDataFormat
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.util.CellRangeAddress
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.jdbc.core.JdbcTemplate
+import otiming.fakturagrunnlag.OtimingDomain.BasisRapportLinje
+import otiming.fakturagrunnlag.OtimingDomain.KontigentRapportLinje
+import otiming.fakturagrunnlag.OtimingDomain.LeiebrikkeRapportLinje
+import otiming.fakturagrunnlag.OtimingFakturaRapport
 import java.io.File
 
-@SpringBootTest
-class OtimingFakturaRapportTests(
-    @Autowired val jdbcTemplate: JdbcTemplate,
-) {
-    val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
-
+class ExcelReport(val otimingFakturaRapport: OtimingFakturaRapport) {
     val LEIEBRIKKE_LEIE: Int = 50
 
-    @Test
-    fun basisRapport() {
-        val foo: List<BasisRapportLinje> = otimingFakturaRapport.selectBasicReport()
-        println(foo)
-    }
-
-    @Test
-    fun kontigentRapport() {
-        val foo: Map<Int, KontigentRapportLinje> = otimingFakturaRapport.selectKontigentRapport()
-        println(foo)
-    }
-
-    @Test
-    fun leiebrikkeRapport() {
-        val foo: Map<Int, LeiebrikkeRapportLinje> = otimingFakturaRapport.selectLeiebrikkeRapport()
-        println(foo)
-    }
-
-
-    @Test
-    fun fakturarapport() {
-        val fakturarapportlinjer = createFakturarapportlinjer()
-
-        fakturarapportlinjer.forEach { println(it) }
-    }
-
-    @Test
-    fun fakturagrunnlag_excel() {
+    fun fakturagrunnlagExcel(databasenavn: String) {
         val fakturarapportlinjer = createFakturarapportlinjer()
         val workbook = createFakturaWorkbook(fakturarapportlinjer)
 
-        val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/test_output2.xlsx")
+        val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/$databasenavn.xlsx")
         workbook.write(file.outputStream())
+    }
+
+    fun createFakturarapportlinjer(): List<Fakturarapportlinje> {
+        val basisrapportlinjer: List<BasisRapportLinje> = otimingFakturaRapport.selectBasicReport()
+        val leiebrikkeRapport = otimingFakturaRapport.selectLeiebrikkeRapport()
+        val kontigentRapport = otimingFakturaRapport.selectKontigentRapport()
+
+        return basisrapportlinjer.map {
+            val leiebrikkerapportlinje: LeiebrikkeRapportLinje? = leiebrikkeRapport.get(it.id)
+            val kontigentRapportLinje: KontigentRapportLinje? = kontigentRapport.get(it.id)
+
+            Fakturarapportlinje(
+                id = it.id,
+                klubb = it.klubb,
+                distanse = it.distanse,
+                dato = it.dato,
+                startnr = it.startnr?.toDouble(),
+                fornavn = it.fornavn,
+                etternavn = it.etternavn,
+                klasse = it.klasse,
+                brikkenummer = leiebrikkerapportlinje?.etimingEcard,
+                etimingEcardFee = leiebrikkerapportlinje?.etimingEcardFee,
+                etimingEcard2 = leiebrikkerapportlinje?.ecard2,
+                registrertLeiebrikkeNummer = leiebrikkerapportlinje?.leiebrikke_nummer,
+                registrertLeiebrikkeEier = leiebrikkerapportlinje?.leiebrikke_eier,
+                registrertLeiebrikkeKortnavn = leiebrikkerapportlinje?.leiebrikke_kortnavn,
+                etimingKontigent1 = kontigentRapportLinje?.etimingEntryFee1,
+                etimingKontigent2 = kontigentRapportLinje?.etimingEntryFee2,
+                etimingKontigent3 = kontigentRapportLinje?.etimingEntryFee3,
+                eventorKontigentNavn = kontigentRapportLinje?.eventorEntryFeeNames,
+                eventorKontigentKalkulasjon = kontigentRapportLinje?.eventorEntryFeeCalculation,
+                eventorKontigentSum = kontigentRapportLinje?.eventorEntryFeeSum,
+            )
+        }
     }
 
     private fun createFakturaWorkbook(input: List<Fakturarapportlinje>): XSSFWorkbook {
@@ -101,39 +100,6 @@ class OtimingFakturaRapportTests(
     }
 
 
-    fun createFakturarapportlinjer(): List<Fakturarapportlinje> {
-        val basisrapportlinjer: List<BasisRapportLinje> = otimingFakturaRapport.selectBasicReport()
-        val leiebrikkeRapport = otimingFakturaRapport.selectLeiebrikkeRapport()
-        val kontigentRapport = otimingFakturaRapport.selectKontigentRapport()
-
-        return basisrapportlinjer.map {
-            val leiebrikkerapportlinje: LeiebrikkeRapportLinje? = leiebrikkeRapport.get(it.id)
-            val kontigentRapportLinje: KontigentRapportLinje? = kontigentRapport.get(it.id)
-
-            Fakturarapportlinje(
-                id = it.id,
-                klubb = it.klubb,
-                distanse = it.distanse,
-                dato = it.dato,
-                startnr = it.startnr?.toDouble(),
-                fornavn = it.fornavn,
-                etternavn = it.etternavn,
-                klasse = it.klasse,
-                brikkenummer = leiebrikkerapportlinje?.etimingEcard,
-                etimingEcardFee = leiebrikkerapportlinje?.etimingEcardFee,
-                etimingEcard2 = leiebrikkerapportlinje?.ecard2,
-                registrertLeiebrikkeNummer = leiebrikkerapportlinje?.leiebrikke_nummer,
-                registrertLeiebrikkeEier = leiebrikkerapportlinje?.leiebrikke_eier,
-                registrertLeiebrikkeKortnavn = leiebrikkerapportlinje?.leiebrikke_kortnavn,
-                etimingKontigent1 = kontigentRapportLinje?.etimingEntryFee1,
-                etimingKontigent2 = kontigentRapportLinje?.etimingEntryFee2,
-                etimingKontigent3 = kontigentRapportLinje?.etimingEntryFee3,
-                eventorKontigentNavn = kontigentRapportLinje?.eventorEntryFeeNames,
-                eventorKontigentKalkulasjon = kontigentRapportLinje?.eventorEntryFeeCalculation,
-                eventorKontigentSum = kontigentRapportLinje?.eventorEntryFeeSum,
-            )
-        }
-    }
 }
 
 data class Fakturarapportlinje(
@@ -217,7 +183,6 @@ data class Fakturarapportlinje(
         return row
     }
 }
-
 
 enum class ExcelHeader2(val colIndex: Int) {
     Klubb(0),
