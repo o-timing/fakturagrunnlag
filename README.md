@@ -153,19 +153,12 @@ mise run fakturagrunnlag "migrate-db"
 
 ## Legg inn leiebrikker
 
-Populer `otiming_leiebrikker` med data fra `~/projects/orientering/o-timing/faktura2/src/test/resources/O-Timing Leiebrikker.csv`
-ved å paste rett inn i tabellen i IntelliJ
-
-## Last ned data fra eventor
-
-Finn ut eventor sin arrangement-id (denne brukes for å få ut data fra Eventor )
-```sql
-SELECT id
-FROM day;
+F.eks.
+```
+mise run fakturagrunnlag "read-leiebrikker-csv src/main/resources/leiebrikker.csv"
 ```
 
-Denne id'en legges inn i:
-com.example.otiming.PopulateEventorTablesTests.getEventId
+## Last ned data fra eventor
 
 Nå er det klart for å laste ned fra eventor
 Dette gjøres vha 
@@ -185,17 +178,16 @@ mise run fakturagrunnlag "populate-eventor-tables"
 ```
 
 Bytt ut leiebrikkepris her:
-com.example.otiming.OtimingFakturaRapportTests.LEIEBRIKKE_LEIE
+otiming.fakturagrunnlag.excel.ExcelReport.LEIEBRIKKE_LEIE
 
 ## Lage excel rapport
-kjør testen:
+kjør:
 
 ```
 mise run fakturagrunnlag "generate-excel-report"
 ```
 
 ## TODO
-- gjør det mulig å lese inn leiebrikker fra csv vha mise
 - ta med leiebrikkepris i excelarket og bruk den i formel slik at den kan endres i excel-arket
 - ta med alle kontigentene i excel-arket og bruk dem i en formel slik at det er mulig å endre dem i excel-arket
 - ta med knytningen mellom kontigent og klasse og bruk det som en formel slik at det er mulig å endre dem i excel-arket
@@ -206,27 +198,8 @@ mise run fakturagrunnlag "generate-excel-report"
 
 ### Løse notater:
 
-Hvordan kobler man personer i eventor og personer i etiming?
-
-select kid, name, ename
-from name;
-
-"kid" er eventorId'en
-
-Lese inn alle kontigenter fra eventor
-
-koble dem sammen med løpere
-
-undersøke hva de gamle scriptene gjorde og skriv ned en liste her
-
-flytte backup-tingene inn under denne katalogen
-Dokumentere hvordan man laster inn backup
-
 sjekk av database
 
-- hvis otiming-tabellene ikke finnes så må disse opprettes
-    - otiming_leiebrikker
-- slette alle Ledig Startnr
 - sjekke at alle løperene har en brikke
     - det er greit å mangle brikke hvis status er Påmeldt (I)
 

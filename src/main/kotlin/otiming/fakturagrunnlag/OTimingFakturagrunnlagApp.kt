@@ -11,6 +11,7 @@ import otiming.fakturagrunnlag.db.DbMigrations
 import otiming.fakturagrunnlag.eventor.FetchEventorData
 import otiming.fakturagrunnlag.eventor.PopulateEventorTables
 import otiming.fakturagrunnlag.excel.ExcelReport
+import otiming.fakturagrunnlag.leiebrikke.ReadLeiebrikkerCsv
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -29,11 +30,27 @@ class OTimingFakturagrunnlag(
         } else {
             val command = args[0]!!
 
+            val argsLeft: List<String?> = args.drop(1)
+
             when (command) {
                 "migrate-db" -> {
                     logger.info { "Migrate database" }
                     logger.info { "Databasenavn: ${config.emit.databasenavn}" }
                     DbMigrations(jdbcTemplate).migrate()
+                }
+
+                "read-leiebrikker-csv" -> {
+                    logger.info { "Leser leiebrikker inn i databasen fra csv-fil" }
+                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+
+                    if (argsLeft.isEmpty()) {
+                        logger.error { "Du må spesifisere filnavn" }
+                    } else {
+                        val filename = argsLeft[0]!!
+
+                        ReadLeiebrikkerCsv(jdbcTemplate).populateLeiebrikkerTable(filename)
+
+                    }
                 }
 
                 "fetch-data-from-eventor" -> {
