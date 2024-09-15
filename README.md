@@ -92,9 +92,6 @@ SET arr = 'N',
 WHERE arr IS NULL
    OR SUB IS NULL;
 
--- sjekk hvor mange deltakere som er knyttet til de ulike arrangementene 
--- og hvor mange som ikke er knyttet til noe arrangement
---
 -- foventningen er her at det kun skal være en rad som viser at alle 
 -- deltakerene er koblet til det samme arrangementet
 SELECT COUNT(*), arr, sub
@@ -139,10 +136,6 @@ SELECT *
 FROM name
 WHERE status = 'U';
 
-SELECT *
-FROM name
-WHERE ecard IN ('4295770', '4434957', '4338505');
-
 DELETE
 FROM name
 WHERE ename LIKE '%Ukjent%';
@@ -155,15 +148,10 @@ WHERE ename LIKE '%Ukjent%';
 ## Opprett `otiming`-tabeller
 
 ```
-mise run migrate-db
+mise run fakturagrunnlag "migrate-db"
 ```
 
-eller 
-
-```
-mvn spring-boot:run \
-    -Dspring-boot.run.main-class=otiming.fakturagrunnlag.db.DbMigrationsAppKt
-```
+## Legg inn leiebrikker
 
 Populer `otiming_leiebrikker` med data fra `~/projects/orientering/o-timing/faktura2/src/test/resources/O-Timing Leiebrikker.csv`
 ved å paste rett inn i tabellen i IntelliJ
@@ -182,23 +170,31 @@ com.example.otiming.PopulateEventorTablesTests.getEventId
 Nå er det klart for å laste ned fra eventor
 Dette gjøres vha 
 ```
-mise run fetch-data-from-eventor 
+mise run fakturagrunnlag "fetch-data-from-eventor"
+```
+
+Hvis det finnes mer enn en EventID i databasen kan den spesifiseres slik som under 
+(men dette byr nok på andre problemer senere) 
+
+```
+mise run fakturagrunnlag "fetch-data-from-eventor 19104"
 ```
 
 Nå finnes all xml som trengs i databasen
 
 Det neste som må gjøres er å tolke denne xml'en
-dette gjøres vha
+dette gjøres vha å kjøre testene:
 
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntry
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEventclasses
-com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntryfees
+- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntry
+- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEventclasses
+- com.example.otiming.PopulateEventorTablesTests.populateOtimingEventorEntryfees
 
 Bytt ut leiebrikkepris her:
 com.example.otiming.OtimingFakturaRapportTests.LEIEBRIKKE_LEIE
 
-For å lage rapport:
-com.example.otiming.OtimingFakturaRapportTests.fakturagrunnlag_excel
+## Lage excel rapport
+kjør testen:
+- com.example.otiming.OtimingFakturaRapportTests.fakturagrunnlag_excel
 
 
 

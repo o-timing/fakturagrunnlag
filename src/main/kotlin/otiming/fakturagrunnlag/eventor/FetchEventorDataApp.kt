@@ -1,11 +1,6 @@
 package otiming.fakturagrunnlag.eventor
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.runApplication
 import org.springframework.jdbc.core.JdbcTemplate
 import otiming.fakturagrunnlag.ETimingDbService
 import otiming.fakturagrunnlag.EventId
@@ -17,27 +12,15 @@ import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
-@SpringBootApplication
-@EnableConfigurationProperties(OTimingConfig::class)
 class FetchEventorDataApp(
-    @Autowired val jdbcTemplate: JdbcTemplate,
-    @Autowired val config: OTimingConfig
-) : CommandLineRunner {
+    val jdbcTemplate: JdbcTemplate,
+    val config: OTimingConfig
+) {
 
     val eventorService = EventorServiceImpl(config.eventor)
     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
-    override fun run(vararg args: String?) {
-        logger.info { "Databasenavn: ${config.emit.databasenavn}" }
-        if (config.eventor.apiKey.isBlank()) {
-            logger.error { "Eventor API-KEY is not set" }
-            exitProcess(1)
-        } else {
-            // TODO bedre feilhåndtering slik at ikke denne slipper igjennom:
-            // Eventor API-KEY: ${*********************Y}
-            logger.info { "Eventor API-KEY: ${config.eventor.censoredApiKey()}" }
-        }
-
+    fun fetchData(args: List<String?>) {
         val eventId: EventId = findEventId(
             when (args.size) {
                 1 -> args[0]
@@ -106,6 +89,7 @@ class FetchEventorDataApp(
 
     fun findEventId(eventIdFromArg: String?): EventId {
         if (eventIdFromArg != null) {
+            logger.error { "eventIdFromArg: '" + eventIdFromArg + "'" }
             val eventId = eventIdFromArg.toInt()
             logger.info("Bruker eventId fra argument: $eventId")
             return EventId(eventId)
@@ -127,9 +111,4 @@ class FetchEventorDataApp(
         }
     }
 
-}
-
-
-fun main(args: Array<String>) {
-    runApplication<FetchEventorDataApp>(*args)
 }

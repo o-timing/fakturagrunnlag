@@ -11,8 +11,8 @@ import otiming.fakturagrunnlag.OTimingConfig
 
 private val logger = KotlinLogging.logger {}
 
-@SpringBootApplication
-@EnableConfigurationProperties(OTimingConfig::class)
+//@SpringBootApplication
+//@EnableConfigurationProperties(OTimingConfig::class)
 class DbMigrationsApp(
     @Autowired val jdbcTemplate: JdbcTemplate,
     @Autowired val config: OTimingConfig
