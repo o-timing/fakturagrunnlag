@@ -22,27 +22,13 @@ class LeiebrikkeSheetTest(
 
     @Test
     fun leiebrikkeRapport() {
-        val leiebrikker: List<LeiebrikkeRow> = leiebrikkeRepository.getLeiebrikker()
-
-        val workbook = createLeiebrikkeWorkbook(leiebrikker)
-
-        val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/leiebrikker.xlsx")
-        workbook.write(file.outputStream())
+//        val leiebrikker: List<LeiebrikkeRow> = leiebrikkeRepository.getLeiebrikker()
+//
+//        val workbook = createLeiebrikkeWorkbook(leiebrikker)
+//
+//        val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/leiebrikker.xlsx")
+//        workbook.write(file.outputStream())
     }
 
-    private fun createLeiebrikkeWorkbook(input: List<LeiebrikkeRow>): XSSFWorkbook {
-        val workbook = XSSFWorkbook()
-        val workSheet: XSSFSheet = workbook.createSheet("Leiebrikker")
-
-        val table: AutoFilterTable<LeiebrikkeRow> = AutoFilterTable(listOf(
-            TableCell("Kortnavn") { ExcelString(it.kortnavn) },
-            TableCell("Brikkenummer") { ExcelString(it.brikkenummer.value) },
-            TableCell("Eier") { ExcelString(it.eier) }
-        ))
-
-        table.renderInSheet(workSheet, input)
-
-        return workbook
-    }
 }
 

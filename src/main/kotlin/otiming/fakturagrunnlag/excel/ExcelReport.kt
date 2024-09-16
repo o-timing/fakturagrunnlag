@@ -18,6 +18,7 @@ import otiming.fakturagrunnlag.excel.ExcelValue.ExcelFormula
 import otiming.fakturagrunnlag.excel.ExcelValue.ExcelInt
 import otiming.fakturagrunnlag.excel.ExcelValue.ExcelString
 import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRepository
+import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRow
 import java.io.File
 
 class ExcelReport(
@@ -55,9 +56,14 @@ class ExcelReport(
         val oppsummeringSheet =
             createOppsummeringSheet(workbook, fakturarapportlinjer, formulaEvaluator, dateStyle, currencyStyle)
 
+        // leiebrikker sheet
+        val leiebrikker: List<LeiebrikkeRow> = leiebrikkeRepository.getLeiebrikker()
+        val leiebrikkerSheet = createLeiebrikkerSheet(workbook, leiebrikker)
+
         // rekkefølge
         workbook.setSheetOrder(oppsummeringSheet.sheetName, 0)
         workbook.setSheetOrder(variablerSheet.sheetName, 1)
+        workbook.setSheetOrder(leiebrikkerSheet.sheetName, 2)
         workbook.setActiveSheet(0)
         workbook.setSelectedTab(0)
 
@@ -181,6 +187,19 @@ class ExcelReport(
         return sheet
     }
 
+    fun createLeiebrikkerSheet(workbook: XSSFWorkbook, input: List<LeiebrikkeRow>): XSSFSheet {
+        val sheet: XSSFSheet = workbook.createSheet("Leiebrikker")
+
+        val table: AutoFilterTable<LeiebrikkeRow> = AutoFilterTable(listOf(
+            TableCell("Kortnavn") { ExcelString(it.kortnavn) },
+            TableCell("Brikkenummer") { ExcelString(it.brikkenummer.value) },
+            TableCell("Eier") { ExcelString(it.eier) }
+        ))
+
+        table.renderInSheet(sheet, input)
+
+        return sheet
+    }
 }
 
 data class Fakturarapportlinje(
