@@ -188,12 +188,7 @@ mise run fakturagrunnlag "generate-excel-report"
 ```
 
 ## TODO
-- fikse bug som gjør at noen dukker opp med 0 i kontigent
-  - flytte det som idag er en test til vanlig kode
   - enkel måte å dumpe data ut i excel-arket
-    - leiebrikker
-    - variabler 
-      - leiebrikke avgift
     - kontigenter
     - klasser
 - ta med alle kontigentene i excel-arket og bruk dem i en formel slik at det er mulig å endre dem i excel-arket
