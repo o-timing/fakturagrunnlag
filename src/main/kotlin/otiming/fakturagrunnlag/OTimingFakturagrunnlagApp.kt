@@ -36,13 +36,13 @@ class OTimingFakturagrunnlag(
             when (command) {
                 "migrate-db" -> {
                     logger.info { "Migrate database" }
-                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+                    logger.info { "Databasenavn: ${config.etiming.databasenavn}" }
                     DbMigrations(jdbcTemplate).migrate()
                 }
 
                 "read-leiebrikker-csv" -> {
                     logger.info { "Leser leiebrikker inn i databasen fra csv-fil" }
-                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+                    logger.info { "Databasenavn: ${config.etiming.databasenavn}" }
 
                     if (argsLeft.isEmpty()) {
                         logger.error { "Du må spesifisere filnavn" }
@@ -56,7 +56,7 @@ class OTimingFakturagrunnlag(
 
                 "fetch-data-from-eventor" -> {
                     logger.info { "Fetch data from Eventor" }
-                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+                    logger.info { "Databasenavn: ${config.etiming.databasenavn}" }
                     if (config.eventor.apiKey.isBlank()) {
                         logger.error { "Eventor API-KEY is not set" }
                         exitProcess(1)
@@ -74,7 +74,7 @@ class OTimingFakturagrunnlag(
 
                 "populate-eventor-tables" -> {
                     logger.info { "Populer Eventor-tabeller" }
-                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+                    logger.info { "Databasenavn: ${config.etiming.databasenavn}" }
 
                     val eTimingDbService = ETimingDbService(jdbcTemplate)
 
@@ -83,12 +83,12 @@ class OTimingFakturagrunnlag(
 
                 "generate-excel-report" -> {
                     logger.info { "Generer Excel-rapport" }
-                    logger.info { "Databasenavn: ${config.emit.databasenavn}" }
+                    logger.info { "Databasenavn: ${config.etiming.databasenavn}" }
 
                     val otimingFakturaRapport = OtimingFakturaRapport(jdbcTemplate)
                     val leiebrikkeRepository = LeiebrikkeRepository(jdbcTemplate)
 
-                    ExcelReport(otimingFakturaRapport, leiebrikkeRepository).fakturagrunnlagExcel(config.emit.databasenavn)
+                    ExcelReport(otimingFakturaRapport, leiebrikkeRepository).fakturagrunnlagExcel(config.etiming.databasenavn)
                 }
             }
         }

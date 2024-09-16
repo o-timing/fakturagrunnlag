@@ -5,10 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "o-timing")
 data class OTimingConfig(
     val eventor: EventorConfig,
-    val emit: EmitConfig
+    val etiming: EtimingConfig
 )
 
-data class EmitConfig(
+data class EtimingConfig(
     val databasenavn: String
 )
 

@@ -80,7 +80,7 @@ class ExcelReport(
         return sheet
     }
 
-    private fun createFakturarapportlinjer(): List<Fakturarapportlinje> {
+    fun createFakturarapportlinjer(): List<Fakturarapportlinje> {
         val basisrapportlinjer: List<BasisRapportLinje> = otimingFakturaRapport.selectBasicReport()
         val leiebrikkeRapport = otimingFakturaRapport.selectLeiebrikkeRapport()
         val kontigentRapport = otimingFakturaRapport.selectKontigentRapport()

@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate
 @SpringBootTest
 class OTimingFakturagrunnlagTests(
     @Autowired val jdbcTemplate: JdbcTemplate,
-    @Autowired val config: otiming.fakturagrunnlag.EventorConfig
 ) {
 
     // TODO

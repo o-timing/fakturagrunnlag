@@ -8,7 +8,7 @@ import otiming.fakturagrunnlag.excel.ExcelReport
 import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRepository
 
 @SpringBootTest
-class OppsummeringSheetTest(
+class ExcelReportTest(
     @Autowired jdbcTemplate: JdbcTemplate
 ) {
 
@@ -17,7 +17,7 @@ class OppsummeringSheetTest(
     val excelReport = ExcelReport(otimingFakturaRapport, leiebrikkeRepository)
 
     @Test
-    fun testOppsummeringSheet() {
+    fun testExcelReport() {
         excelReport.fakturagrunnlagExcel("fakturagrunnlag_fra_test")
     }
 }
