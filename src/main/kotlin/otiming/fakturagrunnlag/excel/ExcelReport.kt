@@ -10,13 +10,7 @@ import otiming.fakturagrunnlag.OtimingDomain.KontigentRapportLinje
 import otiming.fakturagrunnlag.OtimingDomain.LeiebrikkeRapportLinje
 import otiming.fakturagrunnlag.OtimingFakturaRapport
 import otiming.fakturagrunnlag.excel.ExcelSelection.SameRowSelection
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelBool
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelCurrency
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelDate
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelDouble
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelFormula
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelInt
-import otiming.fakturagrunnlag.excel.ExcelValue.ExcelString
+import otiming.fakturagrunnlag.excel.ExcelValue.*
 import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRepository
 import otiming.fakturagrunnlag.leiebrikke.LeiebrikkeRow
 import java.io.File
@@ -41,6 +35,22 @@ class ExcelReport(
         // variabler sheet
         val variablerSheet = createVariablerSheet(workbook)
 
+
+        // kontigent sheet
+        val fakturarapportlinjer: List<Fakturarapportlinje> = createFakturarapportlinjer()
+        val unikeKontigentlinjer = fakturarapportlinjer.map { linje ->
+            KontigentLinje(
+                linje.eventorKontigentNavn,
+                linje.eventorKontigentKalkulasjon,
+                linje.eventorKontigentSum
+            )
+        }
+            .distinct()
+            .sortedBy { it.kontigentNavn }
+
+        val kontigentSheet = createKontigentSheet(workbook, unikeKontigentlinjer)
+
+
         // oppsummering sheet
         val currencyStyle: XSSFCellStyle = workbook.createCellStyle()
         currencyStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"))
@@ -50,8 +60,6 @@ class ExcelReport(
 
         val formulaEvaluator: XSSFFormulaEvaluator =
             workbook.getCreationHelper().createFormulaEvaluator()
-
-        val fakturarapportlinjer: List<Fakturarapportlinje> = createFakturarapportlinjer()
 
         val oppsummeringSheet =
             createOppsummeringSheet(workbook, fakturarapportlinjer, formulaEvaluator, dateStyle, currencyStyle)
@@ -64,11 +72,15 @@ class ExcelReport(
         workbook.setSheetOrder(oppsummeringSheet.sheetName, 0)
         workbook.setSheetOrder(variablerSheet.sheetName, 1)
         workbook.setSheetOrder(leiebrikkerSheet.sheetName, 2)
+        workbook.setSheetOrder(kontigentSheet.sheetName, 3)
         workbook.setActiveSheet(0)
         workbook.setSelectedTab(0)
 
         // skriv til fil
         val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/$databasenavn.xlsx")
+
+        formulaEvaluator.evaluateAll()
+
         workbook.write(file.outputStream())
     }
 
@@ -162,8 +174,21 @@ class ExcelReport(
                 TableCell(
                     "eventor kontigentkalkulasjon",
                     hidden = true
-                ) { row -> ExcelString(row.eventorKontigentKalkulasjon) },
-                TableCell("eventor kontigentsum", hidden = true) { row -> ExcelDouble(row.eventorKontigentSum) },
+                ) { row ->
+                    ExcelFormula(currencyStyle) { colNum, rowNum ->
+                        val eventorKontigentNavn = RelativeCellReference(ColNum(-1), RowNum(0)).render(colNum, rowNum)
+                        // TODO hack: hardkodet Kontigenter
+                        "LOOKUP($eventorKontigentNavn, Kontigenter!A$2:A200, Kontigenter!B$2:B200)"
+                    }
+                },
+                TableCell("eventor kontigentsum", hidden = true) { row ->
+                    ExcelFormula(currencyStyle) { colNum, rowNum ->
+                        val eventorKontigentNavn = RelativeCellReference(ColNum(-2), RowNum(0)).render(colNum, rowNum)
+
+                        // TODO hack: hardkodet Kontigenter
+                        "LOOKUP($eventorKontigentNavn, Kontigenter!A$2:A200, Kontigenter!C$2:C200)"
+                    }
+                },
                 TableCell("kontigent") { row ->
                     ExcelFormula(currencyStyle) { colNum, rowNum ->
                         val eventorKontigentSumRef = RelativeCellReference(ColNum(-1), RowNum(0)).render(colNum, rowNum)
@@ -190,13 +215,35 @@ class ExcelReport(
     fun createLeiebrikkerSheet(workbook: XSSFWorkbook, input: List<LeiebrikkeRow>): XSSFSheet {
         val sheet: XSSFSheet = workbook.createSheet("Leiebrikker")
 
-        val table: AutoFilterTable<LeiebrikkeRow> = AutoFilterTable(listOf(
-            TableCell("Kortnavn") { ExcelString(it.kortnavn) },
-            TableCell("Brikkenummer") { ExcelString(it.brikkenummer.value) },
-            TableCell("Eier") { ExcelString(it.eier) }
-        ))
+        val table: AutoFilterTable<LeiebrikkeRow> = AutoFilterTable(
+            listOf(
+                TableCell("Kortnavn") { ExcelString(it.kortnavn) },
+                TableCell("Brikkenummer") { ExcelString(it.brikkenummer.value) },
+                TableCell("Eier") { ExcelString(it.eier) }
+            ))
 
         table.renderInSheet(sheet, input)
+
+        return sheet
+    }
+
+    data class KontigentLinje(
+        val kontigentNavn: String?,
+        val kontigentKalkulasjon: String?,
+        val kontigentsum: Double?
+    )
+
+    fun createKontigentSheet(workbook: XSSFWorkbook, unikeKontigentlinjer: List<KontigentLinje>): XSSFSheet {
+        val sheet: XSSFSheet = workbook.createSheet("Kontigenter")
+
+        val table: AutoFilterTable<KontigentLinje> = AutoFilterTable(
+            listOf(
+                TableCell("Kontigentnavn") { ExcelString(it.kontigentNavn) },
+                TableCell("Kontigentkalkulasjon") { ExcelString(it.kontigentKalkulasjon) },
+                TableCell("Kontigentsum") { ExcelDouble(it.kontigentsum) }
+            ))
+
+        table.renderInSheet(sheet, unikeKontigentlinjer)
 
         return sheet
     }
