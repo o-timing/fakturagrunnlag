@@ -26,7 +26,7 @@ class ExcelReport(
     val leiebrikkeRepository: LeiebrikkeRepository
 ) {
 
-    val LEIEBRIKKE_AVGIFT = ExcelDefinition("Leiebrikke avgift", ExcelInt(50))
+    val LEIEBRIKKE_AVGIFT = ExcelDefinition("Leiebrikke avgift", ExcelInt(100))
 
     val definitions: ExcelDefinitions = ExcelDefinitions(
         "Variabler",

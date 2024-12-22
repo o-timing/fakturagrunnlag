@@ -1,5 +1,12 @@
 # Oppskrift
 
+Følgende env variabler må være satt:
+```
+OTIMING_EVENTOR_APIKEY=....
+OTIMING_ETIMING_DATABASE_BACKUP_FIL= f.eks. "Sjusjøløpene2024Sprint_2024202412180914.bak" 
+OTIMING_ETIMING_DATABASENAVN= f.eks. "Sjusjøløpene2024Sprint_2024"
+```
+
 ## Restore backup av databasen
 
 ```bash
@@ -7,14 +14,6 @@ cd ~/projects/orientering/o-timing/etiming-database
 ```
 
 - Pakk ut backup-filen i `backups/`
-- Endre `$DB_NAME` i `foo.pl` (TODO gi dette scriptet et bedre navn)
-  - Nydalten2024_2024202408251925.bak (filnavn) = Nydalten2024_2024 (databasenavn)
-  - (dette scriptet brukes for å kjøre restore av en database inne i docker containeren)
-- endre i `volumes` i `docker-compose.yml` til å peke på utpakkede backup-filen som ble kopiert inn i backups
-    - ```dockerfile
-        volumes:
-              - ./backups/Nydalten2024_2024202408251925.bak:/backup.bak:ro ```
-      
 - start databasen vha `docker compose up`
 - i et annet shell; kjør `./list-files-in-backup.sh` (TODO gi dette scriptet et bedre navn)
   - (dette scriptet brukes for å trigge restore av databasen inne i docker containeren)
@@ -147,14 +146,14 @@ WHERE ename LIKE '%Ukjent%';
 
 ## Opprett `otiming`-tabeller
 
-```
+```sh
 mise run fakturagrunnlag "migrate-db"
 ```
 
 ## Legg inn leiebrikker
 
 F.eks.
-```
+```sh
 mise run fakturagrunnlag "read-leiebrikker-csv src/main/resources/leiebrikker.csv"
 ```
 
@@ -162,7 +161,7 @@ mise run fakturagrunnlag "read-leiebrikker-csv src/main/resources/leiebrikker.cs
 
 Nå er det klart for å laste ned fra eventor
 Dette gjøres vha 
-```
+```sh
 mise run fakturagrunnlag "fetch-data-from-eventor"
 ```
 
@@ -173,24 +172,25 @@ Nå finnes all xml som trengs i databasen
 Det neste som må gjøres er å tolke denne xml'en
 dette gjøres vha å kjøre testene:
 
-```
+```sh
 mise run fakturagrunnlag "populate-eventor-tables"
 ```
 
 Bytt ut leiebrikkepris her:
-otiming.fakturagrunnlag.excel.ExcelReport.LEIEBRIKKE_LEIE
+otiming.fakturagrunnlag.excel.ExcelReport.LEIEBRIKKE_AVGIFT
 
 ## Lage excel rapport
 kjør:
 
-```
+```sh
 mise run fakturagrunnlag "generate-excel-report"
 ```
 
 ## TODO
-  - enkel måte å dumpe data ut i excel-arket
-    - kontigenter
-    - klasser
+- enkel måte å dumpe data ut i excel-arket
+  - kontigenter
+  - klasser
+- bruke leiebrikkene som ligger i arket til å utlede om en brikke er en leiebrikke
 - ta med alle kontigentene i excel-arket og bruk dem i en formel slik at det er mulig å endre dem i excel-arket
 - ta med knytningen mellom kontigent og klasse og bruk det som en formel slik at det er mulig å endre dem i excel-arket
 - mise target for å starte database
