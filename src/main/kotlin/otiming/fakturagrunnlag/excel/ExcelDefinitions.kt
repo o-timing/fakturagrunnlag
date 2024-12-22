@@ -10,7 +10,7 @@ data class ExcelDefinitions(
         definitions.forEachIndexed { index, definition ->
             val row = sheet.createRow(index)
             row.createCell(0).setCellValue(definition.name)
-            definition.value.insertIntoCell(row.createCell(1), RowNum(index), ColNum(1), null)
+            definition.value.insertIntoCell(row.createCell(1), RowNum(index), ColNum(1))
         }
 
         sheet.autoSizeColumn(0)

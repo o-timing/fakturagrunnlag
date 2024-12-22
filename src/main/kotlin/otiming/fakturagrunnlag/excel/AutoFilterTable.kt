@@ -1,16 +1,15 @@
 package otiming.fakturagrunnlag.excel
 
 import org.apache.poi.ss.util.CellRangeAddress
-import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFSheet
 
 data class AutoFilterTable<T>(
     val cells: List<TableCell<T>>
 ) {
-    fun renderInSheet(sheet: XSSFSheet, values: List<T>, formulaEvaluator: XSSFFormulaEvaluator? = null) {
+    fun renderInSheet(sheet: XSSFSheet, values: List<T>) {
         renderHeader(sheet)
-        renderBody(sheet, values, formulaEvaluator)
+        renderBody(sheet, values)
         sheet.setAutoFilter(
             CellRangeAddress(
                 /* firstRow = */ 0,
@@ -25,13 +24,13 @@ data class AutoFilterTable<T>(
         }
     }
 
-    private fun renderBody(sheet: XSSFSheet, values: List<T>, formulaEvaluator: XSSFFormulaEvaluator?) {
+    private fun renderBody(sheet: XSSFSheet, values: List<T>) {
         values.forEachIndexed { y, value ->
             val row: XSSFRow = sheet.createRow(y + 1)
             val rowNum = RowNum(y + 1)
             cells.forEachIndexed { x, tableCell ->
                 val colNum = ColNum(x)
-                tableCell.extract(value).insertIntoCell(row.createCell(x), rowNum, colNum, formulaEvaluator)
+                tableCell.extract(value).insertIntoCell(row.createCell(x), rowNum, colNum)
             }
         }
 

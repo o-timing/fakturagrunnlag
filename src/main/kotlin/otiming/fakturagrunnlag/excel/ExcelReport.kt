@@ -2,7 +2,6 @@ package otiming.fakturagrunnlag.excel
 
 import org.apache.poi.hssf.usermodel.HSSFDataFormat
 import org.apache.poi.xssf.usermodel.XSSFCellStyle
-import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import otiming.fakturagrunnlag.OtimingDomain.BasisRapportLinje
@@ -58,11 +57,8 @@ class ExcelReport(
         val dateStyle: XSSFCellStyle = workbook.createCellStyle()
         dateStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("d-mmm-yy"))
 
-        val formulaEvaluator: XSSFFormulaEvaluator =
-            workbook.getCreationHelper().createFormulaEvaluator()
-
         val oppsummeringSheet =
-            createOppsummeringSheet(workbook, fakturarapportlinjer, formulaEvaluator, dateStyle, currencyStyle)
+            createOppsummeringSheet(workbook, fakturarapportlinjer, dateStyle, currencyStyle)
 
         // leiebrikker sheet
         val leiebrikker: List<LeiebrikkeRow> = leiebrikkeRepository.getLeiebrikker()
@@ -79,7 +75,7 @@ class ExcelReport(
         // skriv til fil
         val file = File("/Users/eirikm/projects/orientering/o-timing/fakturagrunnlag/$databasenavn.xlsx")
 
-        formulaEvaluator.evaluateAll()
+        workbook.getCreationHelper().createFormulaEvaluator().evaluateAll()
 
         workbook.write(file.outputStream())
     }
@@ -128,8 +124,8 @@ class ExcelReport(
 
     fun createOppsummeringSheet(
         workbook: XSSFWorkbook, linjer: List<Fakturarapportlinje>,
-        formulaEvaluator: XSSFFormulaEvaluator,
-        dateStyle: XSSFCellStyle, currencyStyle: XSSFCellStyle
+        dateStyle: XSSFCellStyle,
+        currencyStyle: XSSFCellStyle
     ): XSSFSheet {
         val sheet: XSSFSheet = workbook.createSheet("Oppsummering")
 
@@ -207,7 +203,7 @@ class ExcelReport(
             )
         )
 
-        table.renderInSheet(sheet, linjer, formulaEvaluator)
+        table.renderInSheet(sheet, linjer)
 
         return sheet
     }
